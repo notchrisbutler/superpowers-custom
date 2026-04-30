@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when the user asks for TDD, when a Superpowers full workflow calls for TDD, or when a high-risk behavior change needs tests-first implementation.
 ---
 
 # Test-Driven Development (TDD)
@@ -15,18 +15,16 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 ## When to Use
 
-**Always:**
-- New features
-- Bug fixes
-- Refactoring
-- Behavior changes
+Use this skill when:
 
-**Exceptions (ask your human partner):**
-- Throwaway prototypes
-- Generated code
-- Configuration files
+- The user asks for TDD or tests-first work.
+- A Superpowers full workflow calls for TDD.
+- A behavior change is high-risk enough that tests-first work is the safest path.
+- You are implementing a regression fix where a failing test is needed to prove the bug.
 
-Thinking "skip TDD just this once"? Stop. That's rationalization.
+Do not auto-trigger this skill for every quick flow, small feature, refactor, or config change. If the user asked for quick flow or no Superpowers, keep the work lightweight unless the task escalates.
+
+If the change looks risky but the user asked for speed, ask whether to switch to TDD rather than silently invoking this skill.
 
 ## The Iron Law
 

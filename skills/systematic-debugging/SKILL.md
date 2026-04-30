@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: Use when the user asks for debugging/root-cause analysis, when an issue is complex or non-reproducible, when multiple components are involved, or when prior fixes failed.
 ---
 
 # Systematic Debugging
@@ -23,25 +23,17 @@ If you haven't completed Phase 1, you cannot propose fixes.
 
 ## When to Use
 
-Use for ANY technical issue:
-- Test failures
-- Bugs in production
-- Unexpected behavior
-- Performance problems
-- Build failures
-- Integration issues
+Use this skill when:
 
-**Use this ESPECIALLY when:**
-- Under time pressure (emergencies make guessing tempting)
-- "Just one quick fix" seems obvious
-- You've already tried multiple fixes
-- Previous fix didn't work
-- You don't fully understand the issue
+- The user asks for debugging, diagnosis, or root-cause analysis.
+- The issue is non-reproducible, intermittent, or poorly understood.
+- Multiple components or service boundaries are involved.
+- A previous fix failed or multiple fixes have already been tried.
+- The failure is high-risk, production-facing, or likely to hide a deeper cause.
 
-**Don't skip when:**
-- Issue seems simple (simple bugs have root causes too)
-- You're in a hurry (rushing guarantees rework)
-- Manager wants it fixed NOW (systematic is faster than thrashing)
+Do not auto-trigger this skill for every small bug report or obvious localized fix. Quick bug fixes can use quick flow when the cause is clear and the scope is small, or no Superpowers when the user asks for ordinary agent behavior.
+
+If the issue might need root-cause work but the user asked for quick flow or no Superpowers, ask whether to switch to systematic debugging rather than silently invoking this skill.
 
 ## The Four Phases
 
