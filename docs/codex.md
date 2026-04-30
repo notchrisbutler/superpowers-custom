@@ -4,7 +4,7 @@ SuperDuperPowers includes a Codex plugin manifest for local alpha testing. Publi
 
 ## Manifest
 
-The Codex manifest is `.codex-plugin/plugin.json`. It points to the root `skills/` directory and shared hook configuration.
+The Codex manifest is `.codex-plugin/plugin.json`. It points to the root `skills/` directory. It does not enable hooks yet because the shared `hooks/hooks.json` file is currently formatted for Claude Code.
 
 ## Local Marketplace Testing
 
@@ -26,13 +26,14 @@ codex plugin marketplace add /path/to/superduperpowers
 
 ## Config Notes
 
-Codex stores user configuration in `~/.codex/config.toml`. Current Codex builds support `features.multi_agent` and `features.codex_hooks`; enable hook support if your build requires an explicit feature flag for lifecycle hooks.
+Codex stores user configuration in `~/.codex/config.toml`. Current Codex builds support `features.multi_agent`; enable it when you want SuperDuperPowers workflows to dispatch subagents in builds that expose agent-spawning tools.
 
 ```toml
 [features]
 multi_agent = true
-codex_hooks = true
 ```
+
+Do not enable SuperDuperPowers Codex hook injection until this project adds a Codex-specific hook config. The existing `hooks/hooks.json` references Claude Code plugin variables.
 
 ## Verify
 

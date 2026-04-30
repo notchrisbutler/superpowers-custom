@@ -9,6 +9,8 @@
     "skills/",
     "hooks/",
     "assets/",
+    "docs/*.md",
+    "docs/windows/",
     ".opencode/plugins/superpowers.js",
     ".opencode/INSTALL.md",
     ".claude-plugin/",

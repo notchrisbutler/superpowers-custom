@@ -20,7 +20,6 @@
     "workflow"
   ],
   "skills": "./skills/",
-  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "SuperDuperPowers",
     "shortDescription": "Local-first planning, TDD, debugging, and delivery workflows",

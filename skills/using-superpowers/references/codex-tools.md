@@ -65,7 +65,7 @@ specified in the instructions above.
 
 ### Codex plugin notes
 
-Codex now supports plugin manifests at `.codex-plugin/plugin.json` with bundled `skills/`, lifecycle `hooks/hooks.json`, MCP config, app config, and assets at the plugin root. SuperDuperPowers uses this for local alpha packaging.
+Codex now supports plugin manifests at `.codex-plugin/plugin.json` with bundled `skills/`, lifecycle `hooks/hooks.json`, MCP config, app config, and assets at the plugin root. SuperDuperPowers uses the manifest for local alpha packaging, but does not enable Codex hooks until a Codex-specific hook config exists.
 
 Codex plugin marketplaces can be local during development. A repo-local catalog can live at `.agents/plugins/marketplace.json`, while personal catalogs can live at `~/.agents/plugins/marketplace.json`. Public Plugin Directory publication for SuperDuperPowers is deferred until a future v1 non-alpha release.
 
