@@ -161,21 +161,8 @@ escape_for_json() {
 For plugins with multiple hooks, you can create a generic wrapper that takes the script name as an argument:
 
 ### run-hook.cmd
-```cmd
-: << 'CMDBLOCK'
-@echo off
-set "SCRIPT_DIR=%~dp0"
-set "SCRIPT_NAME=%~1"
-"C:\Program Files\Git\bin\bash.exe" "%SCRIPT_DIR%%SCRIPT_NAME%"
-exit /b
-CMDBLOCK
 
-# Unix: run the named script directly
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SCRIPT_NAME="$1"
-shift
-exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
-```
+The current `hooks/run-hook.cmd` implementation is the source of truth. It checks for a missing script name, tries standard Git for Windows Bash paths, falls back to `bash` on `PATH`, forwards extra arguments, exits successfully when Bash is unavailable, and uses `exec bash` on Unix.
 
 ### hooks.json using the reusable wrapper
 ```json
@@ -187,7 +174,8 @@ exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" session-start"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" session-start",
+            "async": false
           }
         ]
       }
@@ -198,7 +186,8 @@ exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" validate-bash"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" validate-bash",
+            "async": false
           }
         ]
       }
