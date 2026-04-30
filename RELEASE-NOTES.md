@@ -13,3 +13,4 @@ Initial alpha release of this custom Superpowers fork.
 - Added quick flow guidance for bounded work: focused context gathering, small changes, targeted validation, and surface-level review without full brainstorming/TDD ceremony
 - Narrowed brainstorming, TDD, and systematic debugging activation so ordinary quick tasks do not automatically trigger heavy workflows
 - Updated local-first docs and testing notes to reduce stale upstream install details and duplicated version examples
+- Documented public GitHub `main` branch installation, including `opencode.json` setup for OpenCode before tagged releases exist

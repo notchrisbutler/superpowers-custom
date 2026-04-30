@@ -1,10 +1,16 @@
-# OpenCode Local Install
+# OpenCode Install
 
-This fork is intended for local plugin development and testing.
+This fork can be installed directly from the public GitHub repository. Tagged releases are not available yet, so install from the current `main` branch.
 
-Add this repository as a git plugin source from your OpenCode config or package manager flow. For local checkout testing, use the repository path you are editing rather than an upstream marketplace URL.
+Add the plugin to your OpenCode config, typically `opencode.json`:
 
-Example plugin reference:
+```json
+{
+  "plugin": ["superpowers-custom@git+https://github.com/notchrisbutler/superpowers-custom.git#main"]
+}
+```
+
+For local checkout development, use a `git+file` source instead:
 
 ```json
 {

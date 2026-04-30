@@ -6,7 +6,7 @@ This fork keeps the core process ideas: use skills deliberately, clarify before 
 
 ## Status
 
-This is an early alpha cleanup release. Expect names, packaging, and supported harnesses to change while the fork settles.
+This is an early alpha cleanup release. Install from the public `main` branch until tagged releases are available. Expect names, packaging, and supported harnesses to change while the fork settles.
 
 ## What's Included
 
@@ -27,11 +27,21 @@ This is an early alpha cleanup release. Expect names, packaging, and supported h
 
 ### OpenCode
 
-For local development, point OpenCode at this repository as a plugin source. See `.opencode/INSTALL.md` for the current local setup notes.
+Add the plugin to your OpenCode config, typically `opencode.json`:
+
+```json
+{
+  "plugin": ["superpowers-custom@git+https://github.com/notchrisbutler/superpowers-custom.git#main"]
+}
+```
+
+This installs from the current `main` branch. For local checkout development, replace the URL with `git+file:///path/to/superpowers-custom`.
+
+See `.opencode/INSTALL.md` for OpenCode verification prompts.
 
 ### Claude, Cursor, Codex, Gemini
 
-The repo contains harness manifests, but this fork is not currently published to official marketplaces. Use local plugin/extension installation for the harness you are testing.
+The repo contains harness manifests, but this fork is not currently published to official marketplaces and has no tagged releases yet. Install from `https://github.com/notchrisbutler/superpowers-custom` at `main`, or use a local checkout while testing harness-specific flows.
 
 ## Core Workflow
 
