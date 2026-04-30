@@ -1,6 +1,6 @@
 # Spec Compliance Reviewer Prompt Template
 
-Use this template when dispatching a spec compliance reviewer subagent.
+Use named `spec-reviewer` when available. Use this fallback template when named agents are unavailable.
 
 **Purpose:** Verify implementer built what was requested (nothing more, nothing less)
 
@@ -56,6 +56,7 @@ Task tool (general-purpose):
     **Verify by reading code, not by trusting report.**
 
     Report:
-    - ✅ Spec compliant (if everything matches after code inspection)
-    - ❌ Issues found: [list specifically what's missing or extra, with file:line references]
+    Result: Approved | Changes Required
+    Findings:
+    - [Critical|Important|Minor] `path:line` - Issue and required fix.
 ```

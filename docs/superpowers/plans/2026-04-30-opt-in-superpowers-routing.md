@@ -16,7 +16,7 @@
 - Modify `skills/brainstorming/SKILL.md`: Narrow activation to explicit Superpowers brainstorming or clearly design-heavy work while preserving the full brainstorming process once selected.
 - Modify `skills/test-driven-development/SKILL.md`: Narrow activation to explicit TDD, full-flow requirements, or high-risk tests-first work while preserving strict TDD once selected.
 - Modify `skills/systematic-debugging/SKILL.md`: Narrow activation to explicit root-cause work, complex issues, multi-component issues, or failed prior fixes while preserving strict debugging once selected.
-- Modify `README.md`, `.opencode/INSTALL.md`, `CLAUDE.md`, `docs/testing.md`, and `RELEASE-NOTES.md`: Keep user-facing docs aligned with the final routing model and reduce duplicated version/routing details.
+- Modify `README.md`, `.opencode/INSTALL.md`, `CLAUDE.md`, `docs/testing.md`, and `CHANGELOG.md`: Keep user-facing docs aligned with the final routing model and reduce duplicated version/routing details.
 - Review package and harness manifests: Keep required literal package names, versions, plugin paths, and hook references where consumers require them.
 
 ## Task 1: Rewrite `using-superpowers` Routing
@@ -77,17 +77,17 @@
 **Files:**
 - Modify: `README.md`
 - Modify: `.opencode/INSTALL.md`
-- Modify: `RELEASE-NOTES.md`
+- Modify: `CHANGELOG.md`
 
 - [x] Document that Superpowers is opt-in by default.
 - [x] Document the three outcomes without duplicating the full route matrix outside `skills/using-superpowers/SKILL.md`.
 - [x] Add OpenCode verification prompts for full flow, quick flow, and no-Superpowers behavior.
-- [x] Summarize routing changes inside the active `2026.4.30-alpha.1` release notes.
+- [x] Summarize routing changes inside the active `2026.4.30-alpha.1` changelog.
 
 ## Task 6: Audit Docs, Package, and Config Surfaces
 
 **Files:**
-- Audit: `README.md`, `RELEASE-NOTES.md`, `CLAUDE.md`, `GEMINI.md`, `package.json`, `.version-bump.json`, `.opencode/INSTALL.md`, `.opencode/plugins/superpowers.js`, `.claude-plugin/*`, `.codex-plugin/*`, `.cursor-plugin/*`, `gemini-extension.json`, `hooks/*.json`, `docs/**/*.md`, `skills/**/*.md`
+- Audit: `README.md`, `CHANGELOG.md`, `CLAUDE.md`, `GEMINI.md`, `package.json`, `.version-bump.json`, `.opencode/INSTALL.md`, `.opencode/plugins/superpowers.js`, `.claude-plugin/*`, `.codex-plugin/*`, `.cursor-plugin/*`, `gemini-extension.json`, `hooks/*.json`, `docs/**/*.md`, `skills/**/*.md`
 
 - [x] Remove stale always-on routing language from active skills and user-facing docs.
 - [x] Collapse detailed routing docs into `skills/using-superpowers/SKILL.md` as the source of truth.

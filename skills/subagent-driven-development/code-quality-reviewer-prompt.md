@@ -1,26 +1,39 @@
 # Code Quality Reviewer Prompt Template
 
-Use this template when dispatching a code quality reviewer subagent.
+Use named `code-reviewer` when available. Use this fallback template when named agents are unavailable.
 
 **Purpose:** Verify implementation is well-built (clean, tested, maintainable)
 
 **Only dispatch after spec compliance review passes.**
 
 ```
-Task tool (superpowers:code-reviewer):
-  Use template at requesting-code-review/code-reviewer.md
+Task tool (general-purpose):
+  description: "Full code review for Task Group N"
+  prompt: |
+    You are reviewing completed work for code quality, maintainability, and integration risks.
 
-  WHAT_WAS_IMPLEMENTED: [from implementer's report]
-  PLAN_OR_REQUIREMENTS: Task N from [plan-file]
-  BASE_SHA: [commit before task]
-  HEAD_SHA: [current commit]
-  DESCRIPTION: [task summary]
+    ## What Was Implemented
+    [from implementer's report]
+
+    ## Plan Or Requirements
+    [Task group or final implementation requirements]
+
+    ## Review Range
+    BASE_SHA: [commit before task/group]
+    HEAD_SHA: [current commit]
+
+    Check:
+    - Established patterns, naming, organization, and maintainability
+    - Error handling, type safety, defensive programming, security, and performance risks
+    - Test coverage and quality
+    - Whether each file has one clear responsibility with a well-defined interface
+    - Whether units are decomposed so they can be understood and tested independently
+    - Whether the implementation follows the file structure from the plan
+    - Whether new or modified files became too large because of this change
+
+    Report:
+    ## Code Review
+    Result: Approved | Changes Required
+    Findings:
+    - [Critical|Important|Minor] `path:line` - Issue and required fix.
 ```
-
-**In addition to standard code quality concerns, the reviewer should check:**
-- Does each file have one clear responsibility with a well-defined interface?
-- Are units decomposed so they can be understood and tested independently?
-- Is the implementation following the file structure from the plan?
-- Did this implementation create new files that are already large, or significantly grow existing files? (Don't flag pre-existing file sizes — focus on what this change contributed.)
-
-**Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment

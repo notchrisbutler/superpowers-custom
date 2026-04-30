@@ -1,6 +1,6 @@
 ## Problem
 
-What problem does this solve for this fork?
+What problem does this solve?
 
 ## Change Summary
 

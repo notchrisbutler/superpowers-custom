@@ -1,7 +1,7 @@
 {
-  "name": "superpowers-custom",
-  "displayName": "Superpowers Custom",
-  "description": "Custom alpha fork of the Superpowers skills workflow for coding agents",
+  "name": "superduperpowers",
+  "displayName": "SuperDuperPowers",
+  "description": "Local-first skills and agents for deliberate coding workflows",
   "version": "2026.4.30-alpha.1",
   "author": {
     "name": "Chris Butler"

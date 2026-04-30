@@ -8,7 +8,7 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 </SUBAGENT-STOP>
 
 <EXTREMELY-IMPORTANT>
-Superpowers is opt-in by default in this fork.
+Superpowers is opt-in by default in this plugin.
 
 Use Superpowers workflows when the user explicitly asks for them, names a Superpowers skill, uses `/brainstorm` or `/superpowers`, or gives a request that is clearly deep and ambiguous, investigation-heavy, high-risk, or plan-heavy.
 
@@ -166,7 +166,7 @@ These thoughts mean STOP and route deliberately:
 
 | Thought | Reality |
 |---|---|
-| "A skill might apply, so I must load it" | This fork is opt-in by default. Load skills only for explicit or high-confidence triggers. |
+| "A skill might apply, so I must load it" | Superpowers is opt-in by default. Load skills only for explicit or high-confidence triggers. |
 | "This says fix, so I should start TDD" | Quick flow and no-Superpowers work do not require TDD unless requested or escalated. |
 | "This small edit needs a design doc" | Design docs are for the full workflow, not quick flow or no-Superpowers work. |
 | "Quick flow means I cannot ask for context" | Quick flow can ask up to five focused questions before acting or escalating. |

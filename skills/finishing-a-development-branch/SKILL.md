@@ -9,7 +9,7 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → Present local-first options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -48,13 +48,15 @@ Or ask: "This branch split from main - is that correct?"
 
 ### Step 3: Present Options
 
+If worktrees or per-subagent branches were used, first explain that the recommended next step is to merge completed work back into a local feature branch, then clean up temporary worktrees and local task branches.
+
 Present exactly these 4 options:
 
 ```
 Implementation complete. What would you like to do?
 
-1. Merge back to <base-branch> locally
-2. Push and create a Pull Request
+1. Merge back locally
+2. Prepare Pull Request summary and commands (you push when ready)
 3. Keep the branch as-is (I'll handle it later)
 4. Discard this work
 
@@ -67,32 +69,32 @@ Which option?
 
 #### Option 1: Merge Locally
 
+If finishing from a feature branch, commit locally if needed and leave push to the user unless they explicitly request it.
+
+If finishing from worktrees or task branches, merge them back into the chosen local feature branch, verify, then clean up temporary worktrees and local task branches.
+
 ```bash
-# Switch to base branch
-git checkout <base-branch>
+# Switch to target local branch
+git checkout <target-local-branch>
 
-# Pull latest
-git pull
-
-# Merge feature branch
-git merge <feature-branch>
+# Merge completed work
+git merge <completed-work-branch>
 
 # Verify tests on merged result
 <test command>
 
 # If tests pass
-git branch -d <feature-branch>
+git branch -d <completed-work-branch>
 ```
 
 Then: Cleanup worktree (Step 5)
 
-#### Option 2: Push and Create PR
+#### Option 2: Prepare PR Summary and Commands
+
+Do not push automatically. Prepare the summary and exact commands for the user to run, unless the user explicitly asks you to push or repo instructions allow it.
 
 ```bash
-# Push branch
 git push -u origin <feature-branch>
-
-# Create PR
 gh pr create --title "<title>" --body "$(cat <<'EOF'
 ## Summary
 <2-3 bullets of what changed>
@@ -103,7 +105,7 @@ EOF
 )"
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Ask whether to clean up local worktrees and temporary task branches now or keep them until after the user pushes/opens the PR.
 
 #### Option 3: Keep As-Is
 
@@ -133,9 +135,13 @@ git branch -D <feature-branch>
 
 Then: Cleanup worktree (Step 5)
 
-### Step 5: Cleanup Worktree
+### Step 5: Cleanup Worktrees And Temporary Branches
 
-**For Options 1, 2, 4:**
+**For Options 1 and 4:** clean up worktrees and completed temporary branches after verification or typed discard confirmation.
+
+**For Option 2:** ask before cleanup. The user may want to keep worktrees or temporary branches until after they push/open the PR.
+
+**For Option 3:** keep worktrees and branches.
 
 Check if in worktree:
 ```bash
@@ -147,14 +153,12 @@ If yes:
 git worktree remove <worktree-path>
 ```
 
-**For Option 3:** Keep worktree.
-
 ## Quick Reference
 
 | Option | Merge | Push | Keep Worktree | Cleanup Branch |
 |--------|-------|------|---------------|----------------|
 | 1. Merge locally | ✓ | - | - | ✓ |
-| 2. Create PR | - | ✓ | ✓ | - |
+| 2. Prepare PR | - | user-run | ask | ask |
 | 3. Keep as-is | - | - | ✓ | - |
 | 4. Discard | - | - | - | ✓ (force) |
 
@@ -170,7 +174,7 @@ git worktree remove <worktree-path>
 
 **Automatic worktree cleanup**
 - **Problem:** Remove worktree when might need it (Option 2, 3)
-- **Fix:** Only cleanup for Options 1 and 4
+- **Fix:** Cleanup automatically only for Options 1 and 4. For Option 2, ask first.
 
 **No confirmation for discard**
 - **Problem:** Accidentally delete work
@@ -183,12 +187,13 @@ git worktree remove <worktree-path>
 - Merge without verifying tests on result
 - Delete work without confirmation
 - Force-push without explicit request
+- Push without explicit request or repo instructions allowing it
 
 **Always:**
 - Verify tests before offering options
 - Present exactly 4 options
 - Get typed confirmation for Option 4
-- Clean up worktree for Options 1 & 4 only
+- Clean up worktrees automatically for Options 1 & 4 only; ask before cleanup for Option 2
 
 ## Integration
 

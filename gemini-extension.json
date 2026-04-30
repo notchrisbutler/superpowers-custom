@@ -1,6 +1,6 @@
 {
-  "name": "superpowers-custom",
-  "description": "Custom alpha fork of the Superpowers skills workflow for coding agents",
+  "name": "superduperpowers",
+  "description": "Local-first skills and agents for deliberate coding workflows",
   "version": "2026.4.30-alpha.1",
   "contextFileName": "GEMINI.md"
 }

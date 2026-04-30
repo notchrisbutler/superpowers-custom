@@ -1,12 +1,12 @@
 ---
 name: Feature Request
-about: Propose a fork-local change or addition
+about: Propose a change or addition
 labels: enhancement
 ---
 
 ## Problem
 
-What would this improve in this fork?
+What would this improve?
 
 ## Proposed solution
 

@@ -629,8 +629,8 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 - [ ] Supporting files only for tools or heavy reference
 
 **Deployment:**
-- [ ] Commit skill to git when the fork owner requests it
-- [ ] Document fork-local verification performed
+- [ ] Commit skill to git when the project owner requests it
+- [ ] Document project-local verification performed
 
 ## Discovery Workflow
 

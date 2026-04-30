@@ -10,7 +10,6 @@
   "audit": {
     "exclude": [
       "CHANGELOG.md",
-      "RELEASE-NOTES.md",
       "node_modules",
       ".git",
       ".version-bump.json",

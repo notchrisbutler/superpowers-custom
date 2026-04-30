@@ -166,9 +166,9 @@ cmd_audit() {
 cmd_bump() {
   local new_version="$1"
 
-  # Validate date-version format used by this fork, with optional prerelease.
+  # Validate date-version format used by this project, with optional prerelease.
   if ! echo "$new_version" | grep -qE '^[0-9]{4}\.[1-9][0-9]*\.[1-9][0-9]*(-[0-9A-Za-z.-]+)?$'; then
-    echo "error: '$new_version' doesn't look like a fork version (expected YYYY.M.D or YYYY.M.D-alpha.N)" >&2
+    echo "error: '$new_version' doesn't look like a project version (expected YYYY.M.D or YYYY.M.D-alpha.N)" >&2
     exit 1
   fi
 

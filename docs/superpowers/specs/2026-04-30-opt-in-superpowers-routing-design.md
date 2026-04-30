@@ -4,7 +4,7 @@
 
 Superpowers currently activates too aggressively. The `using-superpowers` skill tells agents to invoke skills when there is even a 1% chance a skill might apply, and several workflow skills have broad descriptions and hard "always" language. As a result, quick reviews and small code changes can escalate into brainstorming, TDD, planning, subagents, and review workflows without the user clearly asking for that level of process.
 
-This fork should preserve Superpowers for deliberate deep work while making normal coding turns feel lightweight and pragmatic. The bootstrap should route each request to full flow, quick flow, or no Superpowers unless the user invokes it later.
+SuperDuperPowers should preserve Superpowers for deliberate deep work while making normal coding turns feel lightweight and pragmatic. The bootstrap should route each request to full flow, quick flow, or no Superpowers unless the user invokes it later.
 
 ## Goals
 
@@ -19,7 +19,7 @@ This fork should preserve Superpowers for deliberate deep work while making norm
 
 - Removing core Superpowers workflows.
 - Reintroducing slash-command stubs.
-- Reintroducing Visual Companion or browser-server behavior.
+- Adding browser-server behavior unless required by a supported harness.
 - Adding third-party dependencies.
 - Making every quick task use a new formal process.
 

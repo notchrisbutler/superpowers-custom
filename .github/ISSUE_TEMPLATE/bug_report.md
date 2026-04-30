@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Something is not working in this fork
+about: Something is not working
 labels: bug
 ---
 
@@ -8,7 +8,7 @@ labels: bug
 
 | Field | Value |
 |-------|-------|
-| Superpowers Custom version | |
+| SuperDuperPowers version | |
 | Harness | |
 | Harness version | |
 | Model | |

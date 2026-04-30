@@ -1,12 +1,12 @@
 # OpenCode Install
 
-This fork can be installed directly from the public GitHub repository. Tagged releases are not available yet, so install from the current `main` branch.
+SuperDuperPowers can be installed directly from the public GitHub repository. Tagged releases are not available yet, so install from the current `main` branch.
 
 Add the plugin to your OpenCode config, typically `opencode.json`:
 
 ```json
 {
-  "plugin": ["superpowers-custom@git+https://github.com/notchrisbutler/superpowers-custom.git#main"]
+  "plugin": ["superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main"]
 }
 ```
 
@@ -14,7 +14,7 @@ For local checkout development, use a `git+file` source instead:
 
 ```json
 {
-  "plugin": ["superpowers-custom@git+file:///path/to/superpowers-custom"]
+  "plugin": ["superduperpowers@git+file:///path/to/superduperpowers"]
 }
 ```
 

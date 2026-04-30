@@ -1,7 +1,7 @@
 {
-  "name": "superpowers-custom",
+  "name": "superduperpowers",
   "version": "2026.4.30-alpha.1",
-  "description": "Custom alpha fork of the Superpowers skills workflow for coding agents.",
+  "description": "Local-first skills and agents for deliberate coding workflows.",
   "author": {
     "name": "Chris Butler"
   },
@@ -18,9 +18,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Superpowers Custom",
+    "displayName": "SuperDuperPowers",
     "shortDescription": "Planning, TDD, debugging, and delivery workflows for coding agents",
-    "longDescription": "Use Superpowers Custom to guide agent work through brainstorming, implementation planning, test-driven development, systematic debugging, parallel execution, code review, and finish-the-branch workflows.",
+    "longDescription": "Use SuperDuperPowers to guide agent work through brainstorming, implementation planning, test-driven development, systematic debugging, parallel execution, code review, and finish-the-branch workflows.",
     "developerName": "Chris Butler",
     "category": "Coding",
     "capabilities": [
