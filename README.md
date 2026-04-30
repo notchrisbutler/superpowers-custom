@@ -35,16 +35,21 @@ The repo contains harness manifests, but this fork is not currently published to
 
 ## Core Workflow
 
-1. `using-superpowers` loads the skill-use rules at session start.
-2. `brainstorming` turns rough ideas into an approved design.
-3. `writing-plans` turns the design into executable implementation steps.
-4. `executing-plans` or `subagent-driven-development` carries out the plan.
-5. `test-driven-development`, `systematic-debugging`, and `verification-before-completion` guide implementation quality.
-6. `requesting-code-review`, `receiving-code-review`, and `finishing-a-development-branch` help close work cleanly.
+Superpowers is opt-in by default for normal coding turns.
+
+- Explicit requests such as `using superpowers brainstorming`, `/brainstorm`, or `use superpowers executing-plans` load the requested workflow.
+- Clearly deep and ambiguous, investigation-heavy, high-risk, or plan-heavy requests may still trigger Superpowers implicitly.
+- Small reviews, quick code changes, wording edits, and config tweaks can use quick flow: check enough context, make the smallest correct change, run targeted validation when practical, and report what changed.
+- Trivial requests or requests to avoid Superpowers use normal agent behavior unless Superpowers is invoked later.
+- If intent is unclear, the agent should ask whether to use full flow, quick flow, or no Superpowers for the session.
+
+Available full-flow workflows include brainstorming, planning, execution, TDD, debugging, verification, code review, and development-branch completion.
+
+`skills/using-superpowers/SKILL.md` is the source of truth for routing details.
 
 ## Versioning
 
-This fork uses calendar-based alpha versions, for example `2026.4.30-alpha.1`. Multiple releases on the same day should increment the prerelease suffix.
+This fork uses calendar-based alpha versions in the form `YYYY.M.D-alpha.N`. Use `scripts/bump-version.sh` to keep package and harness manifest versions in sync; active release history starts in `RELEASE-NOTES.md`.
 
 ## Attribution
 

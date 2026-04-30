@@ -21,7 +21,7 @@ Skills shape agent behavior. Edit them carefully.
 
 ## Release Posture
 
-This fork uses calendar alpha versions such as `2026.4.30-alpha.1`. Active release history starts in `RELEASE-NOTES.md`; old upstream history should not be restored to active docs.
+This fork uses calendar alpha versions in the form `YYYY.M.D-alpha.N`. Active release history starts in `RELEASE-NOTES.md`; old upstream history should not be restored to active docs.
 
 ## Pull Requests
 
