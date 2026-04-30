@@ -1,14 +1,5 @@
 # Changelog
 
-## Unreleased
-
-- Refreshed local-first harness packaging metadata for Claude Code, Codex, Cursor, Gemini CLI, and OpenCode
-- Added harness-specific install and verification documentation while keeping public marketplace publication deferred until a future v1 non-alpha release
-- Updated Codex, Gemini, and Copilot tool mapping references for current local plugin, extension, and guidance-compatible workflows
-- Aligned packaged docs, instruction files, tests, and Windows hook wrapper guidance with the shipped harness artifacts
-- Clarified development finalization workflows so current-branch execution stays locally committed while worktree branches merge back only to their parent/source branch
-- Registered bundled reviewer agents in the OpenCode plugin so execution workflows can dispatch `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer` as named subagents
-
 ## 2026.4.30-alpha.1
 
 Initial alpha release of SuperDuperPowers.
@@ -22,3 +13,9 @@ Initial alpha release of SuperDuperPowers.
 - Updated finishing guidance to keep push local-first: prepare PR commands unless the user explicitly asks the agent to push
 - Documented public GitHub `main` branch installation, including `opencode.json` setup for OpenCode before tagged releases exist
 - Renamed active release history from `RELEASE-NOTES.md` to `CHANGELOG.md`
+- Refreshed local-first harness packaging metadata for Claude Code, Codex, Cursor, Gemini CLI, and OpenCode
+- Added harness-specific install and verification documentation while keeping public marketplace publication deferred until a future v1 non-alpha release
+- Updated Codex, Gemini, and Copilot tool mapping references for current local plugin, extension, and guidance-compatible workflows
+- Aligned packaged docs, instruction files, tests, and Windows hook wrapper guidance with the shipped harness artifacts
+- Clarified development finalization workflows so current-branch execution stays locally committed while worktree branches merge back only to their parent/source branch
+- Registered bundled reviewer agents in the OpenCode plugin so execution workflows can dispatch `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer` as named subagents
