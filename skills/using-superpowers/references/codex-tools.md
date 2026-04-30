@@ -15,14 +15,14 @@ Skills use Claude Code tool names. When you encounter these in a skill, use your
 
 ## Subagent dispatch requires multi-agent support
 
-Add to your Codex config (`~/.codex/config.toml`):
+Codex supports multi-agent collaboration tools when multi-agent support is enabled. Check the active Codex build and config; current config uses:
 
 ```toml
 [features]
 multi_agent = true
 ```
 
-This enables `spawn_agent`, `wait`, and `close_agent` for skills like `dispatching-parallel-agents` and `subagent-driven-development`.
+This enables agent-spawning workflows for skills like `dispatching-parallel-agents` and `subagent-driven-development` when the harness exposes those tools in the current session.
 
 ## Named agent dispatch
 
@@ -63,12 +63,13 @@ specified in the instructions above.
 - Wrap instructions in XML tags — the model treats tagged blocks as authoritative
 - End with an explicit execution directive to prevent summarization of the instructions
 
-### When this workaround can be removed
+### Codex plugin notes
 
-This approach compensates for Codex's plugin system not yet supporting an `agents`
-field in `plugin.json`. When `RawPluginManifest` gains an `agents` field, the
-plugin can symlink to `agents/` (mirroring the existing `skills/` symlink) and
-skills can dispatch named agent types directly.
+Codex now supports plugin manifests at `.codex-plugin/plugin.json` with bundled `skills/`, lifecycle `hooks/hooks.json`, MCP config, app config, and assets at the plugin root. SuperDuperPowers uses this for local alpha packaging.
+
+Codex plugin marketplaces can be local during development. A repo-local catalog can live at `.agents/plugins/marketplace.json`, while personal catalogs can live at `~/.agents/plugins/marketplace.json`. Public Plugin Directory publication for SuperDuperPowers is deferred until a future v1 non-alpha release.
+
+Named Claude Code agent dispatch still needs adaptation unless the active Codex build exposes equivalent named plugin agents. When a skill says to dispatch a named agent and the harness only exposes generic workers, read the relevant `agents/*.md` prompt and spawn a worker with that prompt content.
 
 ## Environment Detection
 
