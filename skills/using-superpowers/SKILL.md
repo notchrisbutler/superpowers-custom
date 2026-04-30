@@ -98,6 +98,8 @@ digraph skill_flow {
 }
 ```
 
+When a harness todo list exists, keep it current: mark exactly one item `in_progress` before starting that work, and mark it `completed` immediately before moving to the next item or reporting completion.
+
 ## Route Matrix
 
 | Request signal | Route | Action |
@@ -115,6 +117,8 @@ digraph skill_flow {
 Use quick flow when the task is bounded, lightweight Superpowers guidance is useful, and the user did not ask for full Superpowers.
 
 Checklist:
+
+For multi-step quick-flow work, keep a short flat harness todo list and update each item's status immediately as work starts and completes.
 
 1. Check enough local context to avoid guessing.
 2. Ask up to five context questions if needed to understand the request.

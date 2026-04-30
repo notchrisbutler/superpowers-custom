@@ -38,10 +38,10 @@ Build the harness todo list flat, even when the plan has conceptual groups. Use 
 ```
 
 For each flat todo:
-1. Mark as in_progress
+1. Mark as in_progress immediately before starting that todo
 2. Follow each step exactly (plan has grouped, dependency-ordered steps)
 3. Run verifications as specified
-4. Mark as completed
+4. Mark as completed immediately before moving to the next todo
 
 Do not create nested todos. Do not use `Group N` in harness todos; preserve conceptual grouping with `Task N` parent labels and `Task N.M` subtask labels.
 

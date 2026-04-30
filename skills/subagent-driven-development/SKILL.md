@@ -48,6 +48,14 @@ digraph when_to_use {
 7. Run final full implementation review and validation across all tasks.
 8. Invoke `superpowers:finishing-a-development-branch`, preserving whether execution happened on the current branch or in a temporary worktree/task branch.
 
+## Todo Status Discipline
+
+Keep the flat harness todo list current throughout orchestration:
+
+1. Mark exactly one flat todo `in_progress` immediately before starting or dispatching that work.
+2. Mark it `completed` immediately after its implementation, review, or validation is done.
+3. Do not start the next todo, dispatch the next subagent, or report completion while the previous todo is still stale.
+
 ## Flat Todo Shape
 
 Most harnesses do not support nested todos. Preserve conceptual groups with parent `Task N` labels and dependency-ordered `Task N.M` subtasks:
