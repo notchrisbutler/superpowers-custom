@@ -55,4 +55,4 @@ Copilot CLI supports persistent async shell sessions, which have no direct Claud
 
 During alpha, SuperDuperPowers does not claim a public Copilot plugin marketplace surface. Use this mapping when Copilot-style agents are reading SuperDuperPowers skill text through repository instructions or local files.
 
-GitHub Copilot repository guidance can come from `.github/copilot-instructions.md`, path-specific `.github/instructions/*.instructions.md`, `AGENTS.md`, and in some agent contexts root `CLAUDE.md` or `GEMINI.md` files. Prefer those documented instruction surfaces over inventing a Copilot plugin manifest.
+GitHub Copilot repository guidance can come from `.github/copilot-instructions.md`, path-specific `.github/instructions/*.instructions.md`, AGENTS-style instruction files when present, and in some agent contexts root `CLAUDE.md` or `GEMINI.md` files. Prefer those documented instruction surfaces over inventing a Copilot plugin manifest.

@@ -87,7 +87,7 @@ See [Cursor Install](docs/cursor.md) for verification prompts.
 
 ### Copilot
 
-Copilot support is guidance-compatible during alpha. Use `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, and the Copilot tool mapping reference; SuperDuperPowers does not claim a public Copilot plugin surface yet.
+Copilot support is guidance-compatible during alpha. Use shipped repository guidance (`CLAUDE.md`, `GEMINI.md`) and the Copilot tool mapping reference; repository checkouts may also expose AGENTS-style instructions. SuperDuperPowers does not claim a public Copilot plugin surface yet.
 
 See [Copilot Guidance](docs/copilot.md) for setup notes.
 

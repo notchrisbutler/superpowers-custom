@@ -19,5 +19,5 @@
   ],
   "skills": "./skills/",
   "agents": "./agents/",
-  "hooks": "./hooks/hooks.json"
+  "hooks": "./.claude-plugin/hooks.json"
 }

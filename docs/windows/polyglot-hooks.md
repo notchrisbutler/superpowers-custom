@@ -75,12 +75,13 @@ exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
 
 ```
 hooks/
-├── hooks.json           # Points to the .cmd wrapper
 ├── run-hook.cmd         # Polyglot wrapper (cross-platform entry point)
 └── session-start        # Actual hook logic (bash script)
+.claude-plugin/
+└── hooks.json           # Claude Code hook config that points to run-hook.cmd
 ```
 
-### hooks.json
+### .claude-plugin/hooks.json
 
 ```json
 {
@@ -122,7 +123,7 @@ Your actual hook logic goes in the extensionless bash file. To ensure it works o
 - Use pure bash builtins when possible
 - Use `$(command)` instead of backticks
 - Quote all variable expansions: `"$VAR"`
-- Use `printf` or here-docs for output
+- Use `printf` for hook output
 
 ### Avoid:
 - External commands that may not be in PATH (sed, awk, grep)
@@ -135,24 +136,16 @@ Instead of:
 escaped=$(echo "$content" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 ```
 
-Use pure bash:
+Use bash parameter substitution. Avoid heredocs for hook output; some shell versions can hang while processing hook output.
 ```bash
 escape_for_json() {
-    local input="$1"
-    local output=""
-    local i char
-    for (( i=0; i<${#input}; i++ )); do
-        char="${input:$i:1}"
-        case "$char" in
-            $'\\') output+='\\' ;;
-            '"') output+='\"' ;;
-            $'\n') output+='\n' ;;
-            $'\r') output+='\r' ;;
-            $'\t') output+='\t' ;;
-            *) output+="$char" ;;
-        esac
-    done
-    printf '%s' "$output"
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
 }
 ```
 
@@ -179,18 +172,6 @@ The current `hooks/run-hook.cmd` implementation is the source of truth. It check
           }
         ]
       }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" validate-bash",
-            "async": false
-          }
-        ]
-      }
     ]
   }
 }
@@ -202,7 +183,7 @@ The current `hooks/run-hook.cmd` implementation is the source of truth. It check
 `run-hook.cmd` exits successfully when it cannot find Bash, so the plugin still works without SessionStart context injection. Install Git for Windows or put another Bash on `PATH`.
 
 ### Script opens in text editor instead of running
-The hooks.json is pointing directly to the `.sh` file. Point to the `.cmd` wrapper instead.
+The hook config is pointing directly to a shell file. Point to the `.cmd` wrapper instead.
 
 ### Works in terminal but not as hook
 Claude Code may run hooks differently. Test by simulating the hook environment:

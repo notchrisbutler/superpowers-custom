@@ -5,6 +5,7 @@
 - Refreshed local-first harness packaging metadata for Claude Code, Codex, Cursor, Gemini CLI, and OpenCode
 - Added harness-specific install and verification documentation while keeping public marketplace publication deferred until a future v1 non-alpha release
 - Updated Codex, Gemini, and Copilot tool mapping references for current local plugin, extension, and guidance-compatible workflows
+- Aligned packaged docs, instruction files, tests, and Windows hook wrapper guidance with the shipped harness artifacts
 
 ## 2026.4.30-alpha.1
 

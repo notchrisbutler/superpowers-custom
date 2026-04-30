@@ -43,4 +43,4 @@ gemini extensions install https://github.com/notchrisbutler/superduperpowers.git
 gemini extensions link /path/to/superduperpowers
 ```
 
-Gemini extension hooks use Gemini event names such as `SessionStart`, `BeforeTool`, and `AfterTool`. Do not assume Claude Code's `hooks/hooks.json` event semantics apply in Gemini without a Gemini-specific hook config.
+Gemini extension hooks use Gemini event names such as `SessionStart`, `BeforeTool`, and `AfterTool`. Do not assume Claude Code hook config semantics apply in Gemini without a Gemini-specific hook config.

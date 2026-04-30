@@ -4,9 +4,9 @@ SuperDuperPowers does not claim a public Copilot plugin surface during alpha. Co
 
 ## Repository Instructions
 
-GitHub Copilot supports repository instructions in `.github/copilot-instructions.md`, path-specific `.github/instructions/*.instructions.md`, and agent instructions through `AGENTS.md`. Copilot can also use root `CLAUDE.md` or `GEMINI.md` files in some agent contexts.
+GitHub Copilot supports repository instructions in `.github/copilot-instructions.md`, path-specific `.github/instructions/*.instructions.md`, and AGENTS-style instruction files when present. Copilot can also use root `CLAUDE.md` or `GEMINI.md` files in some agent contexts.
 
-This repository keeps contributor guidance in `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` so Copilot-style agents can discover the project posture without a separate plugin manifest.
+This package ships `CLAUDE.md` and `GEMINI.md` so Copilot-style agents can discover the project posture without a separate plugin manifest. Local repository checkouts may also include AGENTS-style instructions.
 
 ## Tool Mapping
 

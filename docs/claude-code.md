@@ -18,7 +18,7 @@ The Claude Code manifest is `.claude-plugin/plugin.json`. It points to:
 
 - `skills/` for SuperDuperPowers skills
 - `agents/` for reviewer agents
-- `hooks/hooks.json` for SessionStart context injection
+- `.claude-plugin/hooks.json` for SessionStart context injection
 
 The SessionStart hook runs `hooks/run-hook.cmd session-start`, which uses `hooks/session-start` to inject the `using-superpowers` routing bootstrap.
 
