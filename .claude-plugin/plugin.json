@@ -3,14 +3,21 @@
   "description": "Local-first skills and agents for deliberate coding workflows",
   "version": "2026.4.30-alpha.1",
   "author": {
-    "name": "Chris Butler"
+    "name": "Chris Butler",
+    "url": "https://github.com/notchrisbutler"
   },
+  "homepage": "https://github.com/notchrisbutler/superduperpowers",
+  "repository": "https://github.com/notchrisbutler/superduperpowers",
   "license": "MIT",
   "keywords": [
     "skills",
+    "agents",
+    "planning",
     "tdd",
     "debugging",
-    "planning",
     "workflows"
-  ]
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": "./hooks/hooks.json"
 }

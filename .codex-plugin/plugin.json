@@ -3,8 +3,11 @@
   "version": "2026.4.30-alpha.1",
   "description": "Local-first skills and agents for deliberate coding workflows.",
   "author": {
-    "name": "Chris Butler"
+    "name": "Chris Butler",
+    "url": "https://github.com/notchrisbutler"
   },
+  "homepage": "https://github.com/notchrisbutler/superduperpowers",
+  "repository": "https://github.com/notchrisbutler/superduperpowers",
   "license": "MIT",
   "keywords": [
     "brainstorming",
@@ -17,20 +20,21 @@
     "workflow"
   ],
   "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "SuperDuperPowers",
-    "shortDescription": "Planning, TDD, debugging, and delivery workflows for coding agents",
-    "longDescription": "Use SuperDuperPowers to guide agent work through brainstorming, implementation planning, test-driven development, systematic debugging, parallel execution, code review, and finish-the-branch workflows.",
+    "shortDescription": "Local-first planning, TDD, debugging, and delivery workflows",
+    "longDescription": "SuperDuperPowers is an alpha local-first workflow toolkit for Codex and compatible coding agents. It packages skills for brainstorming, implementation planning, test-driven development, systematic debugging, parallel execution, code review, and finish-the-branch workflows. Public marketplace publication is planned for a future v1 release.",
     "developerName": "Chris Butler",
-    "category": "Coding",
+    "category": "Productivity",
     "capabilities": [
       "Interactive",
       "Read",
       "Write"
     ],
     "defaultPrompt": [
-      "I've got an idea for something I'd like to build.",
-      "Let's add a feature to this project."
+      "Use SuperDuperPowers brainstorming to shape this feature before implementation.",
+      "Use SuperDuperPowers to write an implementation plan for this change."
     ],
     "brandColor": "#F59E0B",
     "composerIcon": "./assets/superpowers-small.svg",

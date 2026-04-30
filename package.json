@@ -14,6 +14,7 @@
     ".claude-plugin/",
     ".codex-plugin/",
     ".cursor-plugin/",
+    ".agents/plugins/marketplace.json",
     "gemini-extension.json",
     "GEMINI.md",
     "ACKNOWLEDGEMENTS.md",
