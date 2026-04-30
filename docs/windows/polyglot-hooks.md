@@ -22,10 +22,29 @@ A polyglot script is valid syntax in multiple languages simultaneously. Our wrap
 ```cmd
 : << 'CMDBLOCK'
 @echo off
-set "SCRIPT_DIR=%~dp0"
-set "SCRIPT_NAME=%~1"
-"C:\Program Files\Git\bin\bash.exe" "%SCRIPT_DIR%%SCRIPT_NAME%"
-exit /b
+if "%~1"=="" (
+    echo run-hook.cmd: missing script name >&2
+    exit /b 1
+)
+
+set "HOOK_DIR=%~dp0"
+
+if exist "C:\Program Files\Git\bin\bash.exe" (
+    "C:\Program Files\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
+    exit /b %ERRORLEVEL%
+)
+if exist "C:\Program Files (x86)\Git\bin\bash.exe" (
+    "C:\Program Files (x86)\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
+    exit /b %ERRORLEVEL%
+)
+
+where bash >nul 2>nul
+if %ERRORLEVEL% equ 0 (
+    bash "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
+    exit /b %ERRORLEVEL%
+)
+
+exit /b 0
 CMDBLOCK
 
 # Unix: run the named script directly
@@ -164,7 +183,7 @@ exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup",
+        "matcher": "startup|clear|compact",
         "hooks": [
           {
             "type": "command",
