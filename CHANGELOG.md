@@ -6,6 +6,7 @@
 - Added harness-specific install and verification documentation while keeping public marketplace publication deferred until a future v1 non-alpha release
 - Updated Codex, Gemini, and Copilot tool mapping references for current local plugin, extension, and guidance-compatible workflows
 - Aligned packaged docs, instruction files, tests, and Windows hook wrapper guidance with the shipped harness artifacts
+- Clarified development finalization workflows so current-branch execution stays locally committed while worktree branches merge back only to their parent/source branch
 
 ## 2026.4.30-alpha.1
 

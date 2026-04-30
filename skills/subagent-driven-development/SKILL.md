@@ -46,7 +46,7 @@ digraph when_to_use {
 5. Run lite checkpoints for simple task todos.
 6. Run full spec and code reviews at group boundaries.
 7. Run final full implementation review and validation.
-8. Invoke `superpowers:finishing-a-development-branch`.
+8. Invoke `superpowers:finishing-a-development-branch`, preserving whether execution happened on the current branch or in a temporary worktree/task branch.
 
 ## Flat Todo Shape
 
@@ -67,7 +67,7 @@ Most harnesses do not support nested todos. Preserve groups with labels and depe
 - Final: full task-set spec review
 - Final: full task-set code review
 - Final: unit/e2e validation
-- Finalize: prompt user for local commit/merge/cleanup choice
+- Finalize: complete on current branch or prompt for worktree merge/cleanup choice
 ```
 
 Do not create nested todo structures. Do not expand every plan checkbox into a harness todo unless the checkbox is a real dependency boundary.
@@ -166,6 +166,7 @@ Finalize: invoke finishing-a-development-branch
 
 **Never:**
 - Start implementation on main/master branch without explicit user consent
+- Treat current-branch execution as a worktree cleanup/merge flow
 - Create nested TodoWrite structures; use flat labels instead
 - Skip the review required by the task or group review policy
 - Proceed with unfixed full-review issues

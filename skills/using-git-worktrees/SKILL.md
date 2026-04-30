@@ -85,12 +85,15 @@ project=$(basename "$repo_root")
 ### 2. Create Worktree
 
 ```bash
+parent_branch=$(git branch --show-current)
 path="$repo_root/.opencode/worktrees/$BRANCH_NAME"
 
 # Create worktree with new branch
 git worktree add "$path" -b "$BRANCH_NAME"
 cd "$path"
 ```
+
+Record the parent/source branch in your notes and final status. Finalization merges the worktree branch back into this parent/source branch unless the user explicitly chooses another target.
 
 ### 3. Run Project Setup
 
@@ -131,6 +134,7 @@ go test ./...
 
 ```
 Worktree ready at <full-path>
+Parent/source branch: <parent-branch>
 Tests passing (<N> tests, 0 failures)
 Ready to implement <feature-name>
 ```
@@ -190,16 +194,17 @@ Ready to implement auth feature
 When work in one or more worktrees is complete, stop and ask the user how to proceed before merging, committing, deleting worktrees, or pushing.
 
 Default recommendation:
-- Merge all completed worktree branches into one local feature branch.
-- Confirm whether to commit the unified feature branch locally.
+- Merge completed worktree branches into the parent/source feature branch they were spawned from.
+- Confirm whether to commit the parent/source feature branch locally if the merge creates new uncommitted changes.
 - Do not push unless the user explicitly directs you to push.
+- Do not merge to main/master unless main/master was the explicit parent/source branch or the user chooses it.
 
 Question to ask:
 
 ```
 Worktree work is complete. How should I finalize it?
 
-1. Merge completed worktrees into one local feature branch and confirm before committing
+1. Merge completed worktrees into their parent/source feature branch and confirm before committing
 2. Leave worktrees and branches as-is
 3. Custom finalization
 ```
@@ -213,6 +218,7 @@ Worktree work is complete. How should I finalize it?
 - Skip baseline test verification
 - Proceed with failing tests without asking
 - Merge, commit, clean up, or push worktree changes without user approval
+- Merge worktree branches to main/master by default instead of their parent/source branch
 - Push unless the user explicitly directs it
 
 **Always:**
@@ -225,9 +231,9 @@ Worktree work is complete. How should I finalize it?
 ## Integration
 
 **Called by:**
-- **brainstorming** (Phase 4) - REQUIRED when design is approved and implementation follows
-- **subagent-driven-development** - REQUIRED before executing any tasks
-- **executing-plans** - REQUIRED before executing any tasks
+- **brainstorming** (Phase 4) - Use when design is approved and isolated implementation follows
+- **subagent-driven-development** - Use before executing tasks when work should be isolated; skip for explicit current-branch execution
+- **executing-plans** - Use before executing tasks when work should be isolated; skip for explicit current-branch execution
 - Any skill needing isolated workspace
 
 **Pairs with:**

@@ -31,7 +31,7 @@ Build the harness todo list flat, even when the plan has conceptual groups:
 - Task 1.1: Lite review checkpoint
 - Group 1: Full spec/code review
 - Final: full implementation review and validation
-- Finalize: prompt user for local commit/merge/cleanup choice
+- Finalize: complete on current branch or prompt for worktree merge/cleanup choice
 ```
 
 For each flat todo:
@@ -75,10 +75,11 @@ After all tasks complete and verified:
 - Reference skills when plan says to
 - Stop when blocked, don't guess
 - Never start implementation on main/master branch without explicit user consent
+- Respect explicit user direction to execute on the current branch; do not force a worktree in that case
 
 ## Integration
 
 **Required workflow skills:**
-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+- **superpowers:using-git-worktrees** - Use before starting when work should be isolated; skip when the user explicitly directs execution on the current branch
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks

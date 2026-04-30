@@ -1,15 +1,15 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use when implementation is complete, tests have been verified, and local branch or worktree completion needs an explicit next-step decision.
 ---
 
 # Finishing a Development Branch
 
 ## Overview
 
-Guide completion of development work by presenting clear options and handling chosen workflow.
+Guide completion of development work by choosing the correct local context before presenting next-step options.
 
-**Core principle:** Verify tests → Present local-first options → Execute choice → Clean up.
+**Core principle:** Verify tests -> identify durable branch vs temporary worktree branch -> present local-first options -> execute choice.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -37,25 +37,30 @@ Stop. Don't proceed to Step 2.
 
 **If tests pass:** Continue to Step 2.
 
-### Step 2: Determine Base Branch
+### Step 2: Determine Completion Context
 
-```bash
-# Try common base branches
-git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
-```
+Determine whether the completed work is already on the user's durable branch, or whether it lives on a temporary worktree/task branch that must be integrated somewhere else.
 
-Or ask: "This branch split from main - is that correct?"
+Priority order for the integration target:
+- Explicit user instruction from this session
+- Recorded parent/source branch used to spawn the worktree
+- Current durable feature branch, if no worktree/task branch is involved
+- Ask the user; do not guess main/master
+
+Do not infer main/master as the merge target just because it is the repository default branch. Only use main/master when the user explicitly instructed work to land there.
 
 ### Step 3: Present Options
 
-If worktrees or per-subagent branches were used, first explain that the recommended next step is to merge completed work back into a local feature branch, then clean up temporary worktrees and local task branches.
+If already on the user-directed branch and the work is locally committed, do not present the 4-option prompt, offer a local merge, or ask worktree cleanup questions. Report the branch, commit(s), and verification performed, then leave it ready for the user to push or request a PR.
 
-Present exactly these 4 options:
+If worktrees or per-subagent temporary branches were used, first explain that the recommended next step is to merge completed work back into the parent/source feature branch, then clean up temporary worktrees and local task branches. Do not merge temporary worktree branches directly to main/master unless the user explicitly chose main/master as the parent/source branch.
+
+When a worktree, temporary task branch, uncommitted work, or discard decision requires user choice, present exactly these 4 options:
 
 ```
 Implementation complete. What would you like to do?
 
-1. Merge back locally
+1. Merge temporary branch into parent/source branch locally
 2. Prepare Pull Request summary and commands (you push when ready)
 3. Keep the branch as-is (I'll handle it later)
 4. Discard this work
@@ -67,11 +72,11 @@ Which option?
 
 ### Step 4: Execute Choice
 
-#### Option 1: Merge Locally
+#### Option 1: Merge Temporary Branch Into Parent/Source Branch
 
-If finishing from a feature branch, commit locally if needed and leave push to the user unless they explicitly request it.
+Use only when finishing from a worktree or temporary task branch. Merge back into the parent/source branch the temporary branch was spawned from, unless the user explicitly selected a different local target.
 
-If finishing from worktrees or task branches, merge them back into the chosen local feature branch, verify, then clean up temporary worktrees and local task branches.
+If finishing from a durable feature branch, do not merge anywhere. Commit locally if needed and leave push/PR creation to the user unless they explicitly request it.
 
 ```bash
 # Switch to target local branch
@@ -87,7 +92,7 @@ git merge <completed-work-branch>
 git branch -d <completed-work-branch>
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Cleanup worktree or temporary branch only if one exists (Step 5)
 
 #### Option 2: Prepare PR Summary and Commands
 
@@ -105,20 +110,20 @@ EOF
 )"
 ```
 
-Then: Ask whether to clean up local worktrees and temporary task branches now or keep them until after the user pushes/opens the PR.
+Then: Ask whether to clean up local worktrees and temporary task branches now or keep them until after the user pushes/opens the PR. If no worktree or temporary task branch exists, do not ask cleanup questions.
 
 #### Option 3: Keep As-Is
 
-Report: "Keeping branch <name>. Worktree preserved at <path>."
+Report: "Keeping branch <name> as-is." If a worktree exists, include: "Worktree preserved at <path>."
 
-**Don't cleanup worktree.**
+**Don't cleanup worktree or temporary branches.**
 
 #### Option 4: Discard
 
 **Confirm first:**
 ```
 This will permanently delete:
-- Branch <name>
+- Temporary branch <name>
 - All commits: <commit-list>
 - Worktree at <path>
 
@@ -130,14 +135,14 @@ Wait for exact confirmation.
 If confirmed:
 ```bash
 git checkout <base-branch>
-git branch -D <feature-branch>
+git branch -D <temporary-branch>
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Cleanup worktree or temporary branch only if one exists (Step 5)
 
 ### Step 5: Cleanup Worktrees And Temporary Branches
 
-**For Options 1 and 4:** clean up worktrees and completed temporary branches after verification or typed discard confirmation.
+**For Options 1 and 4:** clean up worktrees and completed temporary branches after verification or typed discard confirmation. Never delete the durable feature branch that the user will push or use for PR creation.
 
 **For Option 2:** ask before cleanup. The user may want to keep worktrees or temporary branches until after they push/open the PR.
 
@@ -157,10 +162,10 @@ git worktree remove <worktree-path>
 
 | Option | Merge | Push | Keep Worktree | Cleanup Branch |
 |--------|-------|------|---------------|----------------|
-| 1. Merge locally | ✓ | - | - | ✓ |
+| 1. Merge temp branch | temp -> parent/source | - | - | temp only |
 | 2. Prepare PR | - | user-run | ask | ask |
 | 3. Keep as-is | - | - | ✓ | - |
-| 4. Discard | - | - | - | ✓ (force) |
+| 4. Discard | - | - | - | temp/feature only after typed confirmation |
 
 ## Common Mistakes
 
@@ -176,6 +181,14 @@ git worktree remove <worktree-path>
 - **Problem:** Remove worktree when might need it (Option 2, 3)
 - **Fix:** Cleanup automatically only for Options 1 and 4. For Option 2, ask first.
 
+**Treating a normal feature branch like a worktree**
+- **Problem:** Prompt to merge back to main/master or clean up worktrees when the user worked directly on a branch.
+- **Fix:** If work is already committed on the user-directed branch, report readiness and wait for push/PR instructions.
+
+**Wrong merge target for worktrees**
+- **Problem:** Merge temporary worktree branches to main/master because it is the default branch.
+- **Fix:** Merge worktree/task branches into their parent/source feature branch unless the user explicitly chose main/master.
+
 **No confirmation for discard**
 - **Problem:** Accidentally delete work
 - **Fix:** Require typed "discard" confirmation
@@ -188,12 +201,15 @@ git worktree remove <worktree-path>
 - Delete work without confirmation
 - Force-push without explicit request
 - Push without explicit request or repo instructions allowing it
+- Merge to main/master unless the user explicitly requested main/master as the integration target
+- Delete a durable feature branch while finalizing temporary worktree branches
 
 **Always:**
 - Verify tests before offering options
-- Present exactly 4 options
+- Identify whether work is on a durable branch or temporary worktree/task branch before presenting options
+- Present exactly 4 options when a decision is needed
 - Get typed confirmation for Option 4
-- Clean up worktrees automatically for Options 1 & 4 only; ask before cleanup for Option 2
+- Clean up worktrees automatically for Options 1 & 4 only when a worktree exists; ask before cleanup for Option 2
 
 ## Integration
 
