@@ -16,6 +16,7 @@ export OPENCODE_CONFIG_DIR="$TEST_HOME/.config/opencode"
 # Standard install layout:
 #   $OPENCODE_CONFIG_DIR/superpowers/             ← package root
 #   $OPENCODE_CONFIG_DIR/superpowers/skills/      ← skills dir (../../skills from plugin)
+#   $OPENCODE_CONFIG_DIR/superpowers/agents/      ← bundled named subagents
 #   $OPENCODE_CONFIG_DIR/superpowers/.opencode/plugins/superpowers.js ← plugin file
 #   $OPENCODE_CONFIG_DIR/plugins/superpowers.js   ← symlink OpenCode reads
 
@@ -26,6 +27,7 @@ SUPERPOWERS_PLUGIN_FILE="$SUPERPOWERS_DIR/.opencode/plugins/superpowers.js"
 # Install skills
 mkdir -p "$SUPERPOWERS_DIR"
 cp -r "$REPO_ROOT/skills" "$SUPERPOWERS_DIR/"
+cp -r "$REPO_ROOT/agents" "$SUPERPOWERS_DIR/"
 
 # Install plugin
 mkdir -p "$(dirname "$SUPERPOWERS_PLUGIN_FILE")"
@@ -69,6 +71,7 @@ echo "Setup complete: $TEST_HOME"
 echo "OPENCODE_CONFIG_DIR:  $OPENCODE_CONFIG_DIR"
 echo "Superpowers dir:      $SUPERPOWERS_DIR"
 echo "Skills dir:           $SUPERPOWERS_SKILLS_DIR"
+echo "Agents dir:           $SUPERPOWERS_DIR/agents"
 echo "Plugin file:          $SUPERPOWERS_PLUGIN_FILE"
 echo "Plugin registered at: $OPENCODE_CONFIG_DIR/plugins/superpowers.js"
 echo "Test project at:      $TEST_HOME/test-project"

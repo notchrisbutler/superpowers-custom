@@ -20,7 +20,9 @@ For local checkout development, use a `git+file` source instead:
 }
 ```
 
-The OpenCode plugin entrypoint is `.opencode/plugins/superpowers.js`. It injects the `skills/` directory into OpenCode skill discovery and prepends the `using-superpowers` bootstrap to the first user message.
+The OpenCode plugin entrypoint is `.opencode/plugins/superpowers.js`. It injects the `skills/` directory into OpenCode skill discovery, registers bundled reviewer agents from `agents/` as named OpenCode subagents, and prepends the `using-superpowers` bootstrap to the first user message.
+
+Bundled agents do not need to be copied to `~/.agents/agents`. OpenCode's native markdown-agent directories are `~/.config/opencode/agents/` globally or `.opencode/agents/` per project, but this plugin registers the packaged agents directly when it loads.
 
 ## Verify
 
@@ -33,6 +35,14 @@ Use the superpowers brainstorming skill.
 ```
 
 Expected: the `skill` tool can load skills from this checkout and the agent follows the brainstorming workflow.
+
+Named reviewer-agent prompt:
+
+```text
+List the available subagent types relevant to SuperDuperPowers review workflows.
+```
+
+Expected: `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer` are available as named subagents, so execution workflows can route reviews through those agents instead of generic `general` tasks.
 
 Quick-flow prompt:
 

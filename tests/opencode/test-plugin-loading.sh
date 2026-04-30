@@ -60,8 +60,49 @@ else
     exit 1
 fi
 
-# Test 5: Verify bootstrap text does not reference a hardcoded skills path
-echo "Test 5: Checking bootstrap does not advertise a wrong skills path..."
+# Test 5: Verify bundled reviewer agents are installed
+echo "Test 5: Checking bundled reviewer agents..."
+for agent in code-reviewer spec-reviewer lite-code-reviewer lite-spec-reviewer; do
+    if [ ! -f "$SUPERPOWERS_DIR/agents/$agent.md" ]; then
+        echo "  [FAIL] Missing bundled agent: $agent"
+        exit 1
+    fi
+done
+echo "  [PASS] Bundled reviewer agents exist"
+
+# Test 6: Verify plugin registers named reviewer agents in OpenCode config
+echo "Test 6: Checking named reviewer agent registration..."
+agent_output=$(node --input-type=module <<'NODE'
+const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
+
+const hooks = await SuperpowersPlugin({});
+const config = {};
+await hooks.config(config);
+
+for (const name of ['code-reviewer', 'spec-reviewer', 'lite-code-reviewer', 'lite-spec-reviewer']) {
+  const agent = config.agent?.[name];
+  if (!agent) throw new Error(`missing ${name}`);
+  if (agent.mode !== 'subagent') throw new Error(`${name} is not a subagent`);
+  if (!agent.description) throw new Error(`${name} is missing description`);
+  if (!agent.prompt) throw new Error(`${name} is missing prompt`);
+  if (agent.permission?.edit !== 'deny') throw new Error(`${name} can edit files`);
+}
+
+console.log(Object.keys(config.agent).sort().join('\n'));
+NODE
+) || {
+    echo "  [FAIL] Plugin did not register named reviewer agents"
+    exit 1
+}
+if echo "$agent_output" | grep -q "code-reviewer" && echo "$agent_output" | grep -q "spec-reviewer"; then
+    echo "  [PASS] Named reviewer agents registered"
+else
+    echo "  [FAIL] Expected reviewer agents not found in config"
+    exit 1
+fi
+
+# Test 7: Verify bootstrap text does not reference a hardcoded skills path
+echo "Test 7: Checking bootstrap does not advertise a wrong skills path..."
 if grep -q 'configDir}/skills/superpowers/' "$SUPERPOWERS_PLUGIN_FILE"; then
     echo "  [FAIL] Plugin still references old configDir skills path"
     exit 1
@@ -69,8 +110,8 @@ else
     echo "  [PASS] Plugin does not advertise a misleading skills path"
 fi
 
-# Test 6: Verify personal test skill was created
-echo "Test 6: Checking test fixtures..."
+# Test 8: Verify personal test skill was created
+echo "Test 8: Checking test fixtures..."
 if [ -f "$OPENCODE_CONFIG_DIR/skills/personal-test/SKILL.md" ]; then
     echo "  [PASS] Personal test skill fixture created"
 else

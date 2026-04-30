@@ -21,11 +21,23 @@ const extractAndStripFrontmatter = (content) => {
   const body = match[2];
   const frontmatter = {};
 
-  for (const line of frontmatterStr.split('\n')) {
+  const lines = frontmatterStr.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const colonIdx = line.indexOf(':');
     if (colonIdx > 0) {
       const key = line.slice(0, colonIdx).trim();
-      const value = line.slice(colonIdx + 1).trim().replace(/^["']|["']$/g, '');
+      const rawValue = line.slice(colonIdx + 1).trim();
+      if (rawValue === '|' || rawValue === '>') {
+        const block = [];
+        while (i + 1 < lines.length && (/^\s/.test(lines[i + 1]) || lines[i + 1] === '')) {
+          i++;
+          block.push(lines[i].replace(/^ {2}/, ''));
+        }
+        frontmatter[key] = block.join('\n').trim();
+        continue;
+      }
+      const value = rawValue.replace(/^["']|["']$/g, '');
       frontmatter[key] = value;
     }
   }
@@ -48,9 +60,45 @@ const normalizePath = (p, homeDir) => {
 
 export const SuperpowersPlugin = async ({ client, directory }) => {
   const homeDir = os.homedir();
+  const superpowersAgentsDir = path.resolve(__dirname, '../../agents');
   const superpowersSkillsDir = path.resolve(__dirname, '../../skills');
   const envConfigDir = normalizePath(process.env.OPENCODE_CONFIG_DIR, homeDir);
   const configDir = envConfigDir || path.join(homeDir, '.config/opencode');
+
+  const loadBundledAgents = () => {
+    if (!fs.existsSync(superpowersAgentsDir)) return {};
+
+    const agents = {};
+    for (const file of fs.readdirSync(superpowersAgentsDir)) {
+      if (!file.endsWith('.md')) continue;
+
+      const agentPath = path.join(superpowersAgentsDir, file);
+      const { frontmatter, content } = extractAndStripFrontmatter(fs.readFileSync(agentPath, 'utf8'));
+      const name = frontmatter.name || path.basename(file, '.md');
+      const description = frontmatter.description;
+      const prompt = content.trim();
+
+      if (!name || !description || !prompt) continue;
+
+      const agent = {
+        description,
+        mode: 'subagent',
+        prompt,
+        permission: {
+          edit: 'deny',
+          todowrite: 'deny'
+        }
+      };
+
+      if (frontmatter.model && frontmatter.model !== 'inherit') {
+        agent.model = frontmatter.model;
+      }
+
+      agents[name] = agent;
+    }
+
+    return agents;
+  };
 
   // Helper to generate bootstrap content
   const getBootstrapContent = () => {
@@ -64,7 +112,7 @@ export const SuperpowersPlugin = async ({ client, directory }) => {
     const toolMapping = `**Tool Mapping for OpenCode:**
 When skills reference tools you don't have, substitute OpenCode equivalents:
 - \`TodoWrite\` → \`todowrite\`
-- \`Task\` tool with subagents → Use OpenCode's subagent system (@mention)
+- \`Task\` tool with subagents → Use OpenCode's \`task\` tool with the named \`subagent_type\` when available; use @mentions for manual user-invoked subagents
 - \`Skill\` tool → OpenCode's native \`skill\` tool
 - \`Read\`, \`Write\`, \`Edit\`, \`Bash\` → Your native tools
 
@@ -91,6 +139,14 @@ ${toolMapping}
       config.skills.paths = config.skills.paths || [];
       if (!config.skills.paths.includes(superpowersSkillsDir)) {
         config.skills.paths.push(superpowersSkillsDir);
+      }
+
+      config.agent = config.agent || {};
+      const bundledAgents = loadBundledAgents();
+      for (const [name, agent] of Object.entries(bundledAgents)) {
+        if (!config.agent[name]) {
+          config.agent[name] = agent;
+        }
       }
     },
 

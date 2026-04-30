@@ -7,6 +7,7 @@
 - Updated Codex, Gemini, and Copilot tool mapping references for current local plugin, extension, and guidance-compatible workflows
 - Aligned packaged docs, instruction files, tests, and Windows hook wrapper guidance with the shipped harness artifacts
 - Clarified development finalization workflows so current-branch execution stays locally committed while worktree branches merge back only to their parent/source branch
+- Registered bundled reviewer agents in the OpenCode plugin so execution workflows can dispatch `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer` as named subagents
 
 ## 2026.4.30-alpha.1
 
