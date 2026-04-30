@@ -24,15 +24,15 @@ A polyglot script is valid syntax in multiple languages simultaneously. Our wrap
 @echo off
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_NAME=%~1"
-"C:\Program Files\Git\bin\bash.exe" -l -c "cd \"$(cygpath -u \"%SCRIPT_DIR%\")\" && \"./%SCRIPT_NAME%\""
+"C:\Program Files\Git\bin\bash.exe" "%SCRIPT_DIR%%SCRIPT_NAME%"
 exit /b
 CMDBLOCK
 
-# Unix shell runs from here
+# Unix: run the named script directly
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPT_NAME="$1"
 shift
-"${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
+exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
 ```
 
 ### How It Works
@@ -41,9 +41,7 @@ shift
 
 1. `: << 'CMDBLOCK'` - CMD sees `:` as a label (like `:label`) and ignores `<< 'CMDBLOCK'`
 2. `@echo off` - Suppresses command echoing
-3. The bash.exe command runs with:
-   - `-l` (login shell) to get proper PATH with Unix utilities
-   - `cygpath -u` converts Windows path to Unix format (`C:\foo` → `/c/foo`)
+3. The wrapper tries Git for Windows Bash from standard install paths, then tries `bash` on `PATH`
 4. `exit /b` - Exits the batch script, stopping CMD here
 5. Everything after `CMDBLOCK` is never reached by CMD
 
@@ -51,7 +49,7 @@ shift
 
 1. `: << 'CMDBLOCK'` - `:` is a no-op, `<< 'CMDBLOCK'` starts a heredoc
 2. Everything until `CMDBLOCK` is consumed by the heredoc (ignored)
-3. `# Unix shell runs from here` - Comment
+3. `# Unix: run the named script directly` - Comment
 4. The script runs directly with the Unix path
 
 ## File Structure
@@ -70,11 +68,12 @@ hooks/
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|clear|compact",
+        "matcher": "startup|clear|compact",
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" session-start"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" session-start",
+            "async": false
           }
         ]
       }
@@ -88,9 +87,9 @@ Note: The path must be quoted because `${CLAUDE_PLUGIN_ROOT}` may contain spaces
 ## Requirements
 
 ### Windows
-- **Git for Windows** must be installed (provides `bash.exe` and `cygpath`)
+- **Git for Windows** should be installed to provide `bash.exe`
 - Default installation path: `C:\Program Files\Git\bin\bash.exe`
-- If Git is installed elsewhere, the wrapper needs modification
+- If Git is installed elsewhere, put `bash` on `PATH`
 
 ### Unix (macOS/Linux)
 - Standard bash or sh shell
@@ -108,7 +107,7 @@ Your actual hook logic goes in the extensionless bash file. To ensure it works o
 
 ### Avoid:
 - External commands that may not be in PATH (sed, awk, grep)
-- If you must use them, they're available in Git Bash but ensure PATH is set up (use `bash -l`)
+- If you must use them, they're available in Git Bash but ensure PATH is set up
 
 ### Example: JSON Escaping Without sed/awk
 
@@ -148,15 +147,15 @@ For plugins with multiple hooks, you can create a generic wrapper that takes the
 @echo off
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_NAME=%~1"
-"C:\Program Files\Git\bin\bash.exe" -l -c "cd \"$(cygpath -u \"%SCRIPT_DIR%\")\" && \"./%SCRIPT_NAME%\""
+"C:\Program Files\Git\bin\bash.exe" "%SCRIPT_DIR%%SCRIPT_NAME%"
 exit /b
 CMDBLOCK
 
-# Unix shell runs from here
+# Unix: run the named script directly
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPT_NAME="$1"
 shift
-"${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
+exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
 ```
 
 ### hooks.json using the reusable wrapper
@@ -191,14 +190,8 @@ shift
 
 ## Troubleshooting
 
-### "bash is not recognized"
-CMD can't find bash. The wrapper uses the full path `C:\Program Files\Git\bin\bash.exe`. If Git is installed elsewhere, update the path.
-
-### "cygpath: command not found" or "dirname: command not found"
-Bash isn't running as a login shell. Ensure `-l` flag is used.
-
-### Path has weird `\/` in it
-`${CLAUDE_PLUGIN_ROOT}` expanded to a Windows path ending with backslash, then `/hooks/...` was appended. Use `cygpath` to convert the entire path.
+### Hook exits without injecting context on Windows
+`run-hook.cmd` exits successfully when it cannot find Bash, so the plugin still works without SessionStart context injection. Install Git for Windows or put another Bash on `PATH`.
 
 ### Script opens in text editor instead of running
 The hooks.json is pointing directly to the `.sh` file. Point to the `.cmd` wrapper instead.

@@ -53,7 +53,7 @@ Design implication: keep the plugin root layout, add manifest component paths wh
 
 ### Codex
 
-Codex docs now document plugins with `.codex-plugin/plugin.json`, optional `skills/`, `.mcp.json`, `.app.json`, `hooks/hooks.json`, and assets at the plugin root. Codex local marketplace metadata is documented under `.agents/plugins/marketplace.json`, with local plugin sources using `./`-prefixed paths relative to the marketplace root. Codex config includes `[features].codex_hooks`, `features.multi_agent`, and plugin enable state under `~/.codex/config.toml`.
+Codex docs now document plugins with `.codex-plugin/plugin.json`, optional `skills/`, `.mcp.json`, `.app.json`, `hooks/hooks.json`, and assets at the plugin root. Codex local marketplace metadata is documented under `.agents/plugins/marketplace.json`, with local plugin sources using `./`-prefixed paths relative to the marketplace root. Codex config includes `features.multi_agent` and plugin enable state under `~/.codex/config.toml`; SuperDuperPowers should not enable Codex hooks until it has a Codex-specific hook config.
 
 Design implication: update `.codex-plugin/plugin.json` to current manifest conventions and add documentation for local marketplace testing without claiming official publication. If a repo-local marketplace file is added, it should be clearly labeled as a local testing catalog, not a published distribution channel.
 
