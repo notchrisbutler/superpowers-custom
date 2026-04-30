@@ -14,10 +14,28 @@ When using SuperDuperPowers skill text in a Copilot CLI-style harness, use `skil
 
 ## Verify
 
-Use a Copilot agent with this repository attached and ask:
+Use a Copilot agent with this repository attached.
+
+Full-flow prompt:
 
 ```text
-Follow the repository instructions and explain how SuperDuperPowers routes full flow, quick flow, and no-Superpowers requests.
+Follow the repository instructions and explain how SuperDuperPowers handles an explicit request to use the brainstorming skill.
 ```
 
-Expected: Copilot describes the routing policy from repository instructions or skill references without claiming that SuperDuperPowers is installed from a public Copilot marketplace.
+Expected: Copilot identifies the full-flow route from repository instructions or skill references without claiming that SuperDuperPowers is installed from a public Copilot marketplace.
+
+Quick-flow prompt:
+
+```text
+Using Superpowers quick flow, describe the lightweight steps for a bounded docs wording improvement.
+```
+
+Expected: Copilot describes lightweight context gathering, a small change, targeted validation, and a brief report without escalating to full brainstorming, TDD, or planning.
+
+No-Superpowers prompt:
+
+```text
+Fix a typo in README without using Superpowers.
+```
+
+Expected: Copilot follows ordinary repository instructions and does not claim to load SuperDuperPowers skills or a public Copilot plugin.

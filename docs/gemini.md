@@ -22,9 +22,9 @@ gemini extensions install https://github.com/notchrisbutler/superduperpowers.git
 
 ## Hooks
 
-The shared `hooks/hooks.json` file is formatted for Claude Code plugin hooks, and `hooks/hooks-cursor.json` is formatted for Cursor. Gemini CLI extension hooks use Gemini event names and should be added as a Gemini-specific `hooks/hooks.json` only if this project needs Gemini SessionStart injection later.
+This repository root currently includes `hooks/hooks.json` for Claude Code plugin hooks and `hooks/hooks-cursor.json` for Cursor. Gemini CLI extension testing from the repository root may discover the Claude-formatted `hooks/hooks.json`; if Gemini reports hook warnings, use the session without hook injection or test from a packaged copy that omits Claude-specific hooks.
 
-For now, Gemini receives SuperDuperPowers routing through `GEMINI.md` and discovers bundled skills from the extension `skills/` directory.
+For now, Gemini receives SuperDuperPowers routing through `GEMINI.md` and discovers bundled skills from the extension `skills/` directory. Add a Gemini-specific hook file only if this project needs Gemini SessionStart injection later.
 
 ## Verify
 
