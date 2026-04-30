@@ -7,7 +7,7 @@ description: Use when you have a written implementation plan to execute in a sep
 
 ## Overview
 
-Load plan, review critically, execute flat grouped tasks, report when complete.
+Load plan, review critically, execute flat parent tasks and subtasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
@@ -23,14 +23,17 @@ Load plan, review critically, execute flat grouped tasks, report when complete.
 
 ### Step 2: Execute Tasks
 
-Build the harness todo list flat, even when the plan has conceptual groups:
+Build the harness todo list flat, even when the plan has conceptual groups. Use `Task N` for parent task-scope reviews and `Task N.M` for subtasks:
 
 ```markdown
 - Execution setup: read plan, classify groups, prepare context
 - Task 1.1: <task name>
 - Task 1.1: Lite review checkpoint
-- Group 1: Full spec/code review
-- Final: full implementation review and validation
+- Task 1: Full spec review
+- Task 1: Lite code review
+- Final: full task-set spec review
+- Final: full task-set code review
+- Final: validation
 - Finalize: complete on current branch or prompt for worktree merge/cleanup choice
 ```
 
@@ -40,11 +43,17 @@ For each flat todo:
 3. Run verifications as specified
 4. Mark as completed
 
-Do not create nested todos. Use group and task labels to preserve structure.
+Do not create nested todos. Do not use `Group N` in harness todos; preserve conceptual grouping with `Task N` parent labels and `Task N.M` subtask labels.
+
+At each parent task boundary, run full spec review for that task scope and lite code review for that task scope. Reserve full code review for high-risk task scopes, escalations from lite code review, and the final full task-set review.
 
 ### Step 3: Complete Development
 
 After all tasks complete and verified:
+- Run final full-scope spec review across all completed tasks.
+- If final spec review finds issues, fix them and re-run final full-scope spec review until approved or blocked.
+- Run final full-scope code review across all completed tasks.
+- If final code review finds issues, fix them and re-run final full-scope code review until approved or blocked.
 - Announce: "I'm using the finishing-a-development-branch skill to complete this work."
 - **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
 - Follow that skill to verify tests, present options, execute choice
@@ -69,7 +78,7 @@ After all tasks complete and verified:
 
 ## Remember
 - Review plan critically first
-- Keep TodoWrite flat; preserve groups with labels and ordering
+- Keep TodoWrite flat; preserve conceptual groups with `Task N` / `Task N.M` labels and ordering
 - Follow plan steps exactly
 - Don't skip verifications
 - Reference skills when plan says to

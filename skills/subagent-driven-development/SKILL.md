@@ -5,7 +5,7 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute implementation plans with subagents while keeping harness todos flat and applying review at meaningful task-group boundaries.
+Execute implementation plans with subagents while keeping harness todos flat and applying proportional review at meaningful task boundaries.
 
 **Why subagents:** You delegate work to specialized agents with isolated context. By precisely crafting their instructions and context, you keep them focused while preserving your own context for coordination.
 
@@ -34,7 +34,7 @@ digraph when_to_use {
 **vs. Executing Plans:**
 - Same session coordination
 - Fresh subagents where they add value
-- Lite checkpoints after simple tasks, full spec/code review at group boundaries
+- Lite checkpoints after simple tasks, full task-scope spec review plus lite task-scope code review at task boundaries
 - Faster iteration without human-in-loop between every small task
 
 ## The Process
@@ -44,13 +44,13 @@ digraph when_to_use {
 3. Replace any prior planning/brainstorming todos with one flat TodoWrite list.
 4. Execute each flat todo in dependency order.
 5. Run lite checkpoints for simple task todos.
-6. Run full spec and code reviews at group boundaries.
-7. Run final full implementation review and validation.
+6. Run full task-scope spec review and lite task-scope code review at task boundaries.
+7. Run final full implementation review and validation across all tasks.
 8. Invoke `superpowers:finishing-a-development-branch`, preserving whether execution happened on the current branch or in a temporary worktree/task branch.
 
 ## Flat Todo Shape
 
-Most harnesses do not support nested todos. Preserve groups with labels and dependency order:
+Most harnesses do not support nested todos. Preserve conceptual groups with parent `Task N` labels and dependency-ordered `Task N.M` subtasks:
 
 ```markdown
 - Execution setup: read plan, classify groups, prepare context
@@ -58,19 +58,19 @@ Most harnesses do not support nested todos. Preserve groups with labels and depe
 - Task 1.1: Lite review checkpoint
 - Task 1.2: Implement login endpoint
 - Task 1.2: Lite review checkpoint
-- Group 1: Full spec review
-- Group 1: Full code review
+- Task 1: Full spec review
+- Task 1: Lite code review
 - Task 2.1: Add password reset tests
 - Task 2.1: Lite review checkpoint
-- Group 2: Full spec review
-- Group 2: Full code review
+- Task 2: Full spec review
+- Task 2: Lite code review
 - Final: full task-set spec review
 - Final: full task-set code review
 - Final: unit/e2e validation
 - Finalize: complete on current branch or prompt for worktree merge/cleanup choice
 ```
 
-Do not create nested todo structures. Do not expand every plan checkbox into a harness todo unless the checkbox is a real dependency boundary.
+Do not create nested todo structures. Do not use `Group N` in harness todos; use `Task N` for the parent scope and `Task N.M` for its subtasks. Do not expand every plan checkbox into a harness todo unless the checkbox is a real dependency boundary.
 
 ## Review Policy
 
@@ -79,17 +79,18 @@ Use the cheapest review that matches the risk:
 | Work type | Review |
 |---|---|
 | Mechanical or simple task | One lite review checkpoint, using `lite-spec-reviewer` and/or `lite-code-reviewer` only when useful |
-| Normal task group | Full spec review + full code review after group validation |
+| Normal task scope | Full spec review + lite code review after task validation |
 | High-risk task | Full spec review + full code review before moving on |
-| Final implementation | Full task-set spec review + full code review + validation |
+| Final implementation | Full task-set spec review + full task-set code review + validation |
 
 High-risk means security, auth, data loss, migrations, broad refactors, cross-cutting behavior, unresolved design judgment, or unexpected file changes.
 
-If a lite review finds a concern, escalate that task or group to full spec/code review before moving on.
+If a lite review finds a concern, escalate that task scope to full spec and/or full code review before moving on.
 
 ## Reviewer Routing
 
 - Lite review checkpoint: dispatch `lite-spec-reviewer`, `lite-code-reviewer`, both, or neither based on the task's risk and the implementer's report. Do not split lite checks into multiple harness todos unless they are real dependency boundaries.
+- Lite code review: dispatch `lite-code-reviewer` across the completed parent task scope.
 - Full spec review: dispatch `spec-reviewer`.
 - Full code review: dispatch `code-reviewer`.
 
@@ -109,7 +110,7 @@ Use the least powerful model that can handle each role to conserve cost and incr
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Proceed to the task's review policy: lite checkpoint for simple work, full review for high-risk work, or group review when the group boundary is reached.
+**DONE:** Proceed to the task's review policy: lite checkpoint for simple work, full review for high-risk work, or task-scope review when the parent task boundary is reached.
 
 **DONE_WITH_CONCERNS:** Read the concerns before proceeding. If they affect correctness, scope, or validation, escalate to full review before moving on.
 
@@ -138,7 +139,7 @@ You: I'm using Subagent-Driven Development to execute this plan.
 
 [Read plan file once: docs/superpowers/plans/feature-plan.md]
 [Extract groups and tasks with full text and context]
-[Create flat TodoWrite with task, lite review, group review, final validation, and finalize items]
+[Create flat TodoWrite with setup, Task N.M subtasks, Task N reviews, final validation, and finalize items]
 
 Task 1.1: Hook installation script
 [Dispatch implementation subagent with full task text + context]
@@ -148,12 +149,12 @@ Task 1.1: Lite review checkpoint
 [Dispatch lite-spec-reviewer and/or lite-code-reviewer if useful]
 Lite checkpoint: Pass
 
-Group 1: Full spec review
-[Dispatch spec-reviewer across all Group 1 changes]
+Task 1: Full spec review
+[Dispatch spec-reviewer across all Task 1 changes]
 Result: Approved
 
-Group 1: Full code review
-[Dispatch code-reviewer across all Group 1 changes]
+Task 1: Lite code review
+[Dispatch lite-code-reviewer across all Task 1 changes]
 Result: Approved
 
 Final: full task-set spec review
@@ -168,14 +169,14 @@ Finalize: invoke finishing-a-development-branch
 - Start implementation on main/master branch without explicit user consent
 - Treat current-branch execution as a worktree cleanup/merge flow
 - Create nested TodoWrite structures; use flat labels instead
-- Skip the review required by the task or group review policy
+- Skip the review required by the task review policy
 - Proceed with unfixed full-review issues
 - Dispatch multiple implementation subagents in parallel if they can conflict
 - Make subagents read the plan file; provide full text instead
 - Skip scene-setting context
 - Ignore subagent questions
-- Let implementer self-review replace required group or final review
-- Move past a group while required group review has open issues
+- Let implementer self-review replace required task-scope or final review
+- Move past a task scope while required review has open issues
 
 **If reviewer finds issues:**
 - Implementer or fix subagent fixes them

@@ -1,6 +1,6 @@
 ---
 name: requesting-spec-review
-description: Use when completed work needs a lightweight or full review against a spec, plan, task group, or acceptance criteria.
+description: Use when completed work needs a lightweight or full review against a spec, plan, task scope, or acceptance criteria.
 ---
 
 # Requesting Spec Review
@@ -17,7 +17,7 @@ Choose the cheapest reviewer that matches the risk:
 |---|---|
 | Small, mechanical, or low-risk checkpoint | `lite-spec-reviewer` |
 | Requirements ambiguous or files touched are unexpected | `spec-reviewer` |
-| Normal task group | `spec-reviewer` |
+| Normal parent task scope | `spec-reviewer` |
 | High-risk task | `spec-reviewer` |
 | Final implementation or pre-merge review | `spec-reviewer` |
 
@@ -27,7 +27,7 @@ If unsure, use `spec-reviewer`.
 
 ## How to Request
 
-1. Identify the requirement source: design, spec, plan section, task group, issue, or acceptance criteria.
+1. Identify the requirement source: design, spec, plan section, task scope, issue, or acceptance criteria.
 2. Identify the reviewed change range: base SHA, head SHA, file list, or working-tree diff.
 3. Dispatch `lite-spec-reviewer` or `spec-reviewer` based on the router.
 4. If lite review says `Escalate`, request a full `spec-reviewer` review before proceeding.

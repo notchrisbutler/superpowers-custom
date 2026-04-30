@@ -7,12 +7,12 @@ description: Use when code changes need a lightweight or full code-quality revie
 
 Dispatch the right code-review subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation, never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
 
-**Core principle:** Review at meaningful boundaries. Use lite checkpoints for simple tasks and full reviews for groups, high-risk tasks, and final validation.
+**Core principle:** Review at meaningful boundaries. Use lite code review for normal task-scope checkpoints, and reserve full code review for high-risk tasks, escalations, final validation, and pre-merge review.
 
 ## When to Request Review
 
 **Mandatory:**
-- After each task group in subagent-driven development
+- After each parent task scope in subagent-driven development
 - After any high-risk task
 - After completing major feature
 - Before merge to main
@@ -29,8 +29,8 @@ Choose the cheapest reviewer that matches the risk:
 | Situation | Agent |
 |---|---|
 | Small, mechanical, or low-risk checkpoint | `lite-code-reviewer` |
+| Normal parent task-scope checkpoint | `lite-code-reviewer` |
 | Task grew larger or riskier than expected | `code-reviewer` |
-| Normal task group | `code-reviewer` |
 | High-risk task | `code-reviewer` |
 | Final implementation or pre-merge review | `code-reviewer` |
 
@@ -73,7 +73,7 @@ You: Let me request code review before proceeding.
 BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
 HEAD_SHA=$(git rev-parse HEAD)
 
-[Dispatch code-reviewer subagent because this is a task-group boundary]
+[Dispatch lite-code-reviewer subagent because this is a normal parent task-scope boundary]
   WHAT_WAS_IMPLEMENTED: Verification and repair functions for conversation index
   PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
   BASE_SHA: a7981ec
@@ -95,12 +95,13 @@ You: [Fix progress indicators]
 
 **Subagent-Driven Development:**
 - Lite checkpoint after simple tasks
-- Full review after each task group
+- Lite code review after each normal parent task scope
+- Full code review for high-risk task scopes, escalations, and final task-set review
 - Catch issues before they compound
-- Fix before moving to next group
+- Fix before moving to next parent task scope
 
 **Executing Plans:**
-- Review after each task group
+- Review after each parent task scope
 - Get feedback, apply, continue
 
 **Ad-Hoc Development:**
@@ -110,9 +111,10 @@ You: [Fix progress indicators]
 ## Red Flags
 
 **Never:**
-- Skip the review required by the task or group policy
+- Skip the review required by the task-scope policy
 - Send small mechanical checkpoints to full review by default when lite review is sufficient
-- Send high-risk, group, final, or pre-merge work to lite review
+- Send high-risk, final, or pre-merge work to lite review
+- Send normal parent task-scope code review to full review by default when lite review is sufficient
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback

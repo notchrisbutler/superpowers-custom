@@ -35,13 +35,13 @@ This structure informs the task decomposition. Each task should produce self-con
 
 ## Grouped Task Granularity
 
-Plan in groups that share one useful validation boundary. Keep harness task lists flat by encoding group membership in labels, not nesting.
+Plan in parent task scopes that share one useful validation boundary. Keep harness task lists flat by encoding scope membership in labels, not nesting.
 
 **Each task should be small enough to execute safely, but not so small that it forces a cold-start review loop for mechanical work:**
-- Good group: `Group 1: Login Flow` with test, implementation, and validation tasks
+- Good task scope: `Task 1: Login Flow` with test, implementation, and validation subtasks
 - Good task: `Task 1.1: Write failing login validation tests`
 - Good lite checkpoint: `Task 1.1: Lite review checkpoint` using lite spec/code reviewers as needed
-- Good group review: `Group 1: Full spec/code review`
+- Good task-scope review: `Task 1: Full spec review` and `Task 1: Lite code review`
 - Bad default: full spec review and full code review after every tiny task
 
 Use task-level full review only for high-risk, ambiguous, or cross-cutting work.
@@ -67,9 +67,9 @@ Use task-level full review only for high-risk, ambiguous, or cross-cutting work.
 ## Task Structure
 
 ````markdown
-### Group N: [Feature/Validation Boundary]
+### Task N: [Feature/Validation Boundary]
 
-**Review policy:** [lite task checkpoints + full group review, or per-task full review for high-risk work]
+**Review policy:** [lite task checkpoints + full task-scope spec review + lite task-scope code review, or full spec/code review for high-risk work]
 
 #### Task N.1: [Component Name]
 
@@ -110,11 +110,11 @@ git add tests/path/test.py src/path/file.py
 git commit -m "feat: add specific feature"
 ```
 
-#### Group N Review
+#### Task N Review
 
-- [ ] Run full spec review for Group N
-- [ ] Run full code review for Group N
-- [ ] Run group validation command: `pytest tests/path -v`
+- [ ] Run full spec review for Task N
+- [ ] Run lite code review for Task N
+- [ ] Run task-scope validation command: `pytest tests/path -v`
 ````
 
 ## No Placeholders
@@ -145,7 +145,7 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-**4. Execution shape:** Does the plan create flat, dependency-ordered todos with labels like `Task 1.1`, `Task 1.1 Lite Review Checkpoint`, and `Group 1 Full Review`? If the plan implies nested todos or mandatory full reviews after every tiny task, fix it.
+**4. Execution shape:** Does the plan create flat, dependency-ordered todos with labels like `Task 1.1: <task name>`, `Task 1.1: Lite review checkpoint`, `Task 1: Full spec review`, and `Task 1: Lite code review`? If the plan implies nested todos or mandatory full reviews after every tiny task, fix it.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
@@ -155,7 +155,7 @@ After saving the plan, offer execution choice:
 
 **"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
 
-**1. Subagent-Driven (recommended)** - I execute flat task groups with lite task checkpoints and full group reviews
+**1. Subagent-Driven (recommended)** - I execute flat task scopes with lite task checkpoints, full task-scope spec reviews, lite task-scope code reviews, and final full reviews
 
 **2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
 
@@ -163,8 +163,8 @@ After saving the plan, offer execution choice:
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Flat, dependency-ordered TodoWrite list with group labels and review checkpoints
+- Flat, dependency-ordered TodoWrite list with `Task N` / `Task N.M` labels and review checkpoints
 
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
-- Flat, dependency-ordered TodoWrite list with group labels and review checkpoints
+- Flat, dependency-ordered TodoWrite list with `Task N` / `Task N.M` labels and review checkpoints

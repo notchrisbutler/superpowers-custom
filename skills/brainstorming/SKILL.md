@@ -127,7 +127,7 @@ Wait for the user's response. If they request changes, make them and re-run the 
 **Implementation:**
 
 - Invoke the writing-plans skill to create a detailed implementation plan
-- When execution begins, replace brainstorming todos with the executor's flat, dependency-ordered task list. Preserve conceptual groups with labels like `Group 1`, `Task 1.1`, and `Group 1 Review`; do not create nested todos.
+- When execution begins, replace brainstorming todos with the executor's flat, dependency-ordered task list. Preserve conceptual groups with labels like `Task 1.1`, `Task 1: Full spec review`, and `Task 1: Lite code review`; do not create nested todos.
 - Do NOT invoke any other skill. writing-plans is the next step.
 
 ## Key Principles
