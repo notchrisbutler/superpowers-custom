@@ -1,6 +1,22 @@
 {
-  "name": "superpowers",
-  "version": "5.0.7",
+  "name": "superpowers-custom",
+  "version": "2026.4.30-alpha.1",
+  "private": true,
   "type": "module",
-  "main": ".opencode/plugins/superpowers.js"
+  "main": ".opencode/plugins/superpowers.js",
+  "files": [
+    "skills/",
+    "hooks/",
+    "assets/",
+    ".opencode/plugins/superpowers.js",
+    ".opencode/INSTALL.md",
+    ".claude-plugin/",
+    ".codex-plugin/",
+    ".cursor-plugin/",
+    "gemini-extension.json",
+    "GEMINI.md",
+    "README.md",
+    "RELEASE-NOTES.md",
+    "LICENSE"
+  ]
 }

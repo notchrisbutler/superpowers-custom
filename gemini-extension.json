@@ -1,6 +1,6 @@
 {
-  "name": "superpowers",
-  "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "5.0.7",
+  "name": "superpowers-custom",
+  "description": "Custom alpha fork of the Superpowers skills workflow for coding agents",
+  "version": "2026.4.30-alpha.1",
   "contextFileName": "GEMINI.md"
 }

@@ -166,9 +166,9 @@ cmd_audit() {
 cmd_bump() {
   local new_version="$1"
 
-  # Validate semver-ish format
-  if ! echo "$new_version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
-    echo "error: '$new_version' doesn't look like a version (expected X.Y.Z)" >&2
+  # Validate date-version format used by this fork, with optional prerelease.
+  if ! echo "$new_version" | grep -qE '^[0-9]{4}\.[1-9][0-9]*\.[1-9][0-9]*(-[0-9A-Za-z.-]+)?$'; then
+    echo "error: '$new_version' doesn't look like a fork version (expected YYYY.M.D or YYYY.M.D-alpha.N)" >&2
     exit 1
   fi
 
@@ -205,7 +205,7 @@ case "${1:-}" in
   --help|-h|"")
     echo "Usage: bump-version.sh <new-version> | --check | --audit"
     echo ""
-    echo "  <new-version>  Bump all declared files to the given version"
+    echo "  <new-version>  Bump all declared files to the given date version, e.g. 2026.4.30-alpha.1"
     echo "  --check        Show current versions, detect drift"
     echo "  --audit        Check + scan repo for undeclared version references"
     exit 0
