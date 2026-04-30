@@ -29,7 +29,7 @@ This project is built from Jesse Vincent's [obra/superpowers](https://github.com
 
 ## Quick Start
 
-Install from the current `main` branch until tagged releases are available.
+SuperDuperPowers is alpha software. Install from the current `main` branch or a local checkout until a v1 non-alpha release is published. Public marketplace publication is planned for v1; current manifests and local catalogs are for development and compatibility testing.
 
 ### OpenCode
 
@@ -37,6 +37,7 @@ Add the plugin to your OpenCode config, typically `opencode.json`:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "plugin": ["superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main"]
 }
 ```
@@ -45,15 +46,50 @@ For local checkout development, use a `git+file` source instead:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "plugin": ["superduperpowers@git+file:///path/to/superduperpowers"]
 }
 ```
 
 See [OpenCode Install](.opencode/INSTALL.md) for verification prompts.
 
-### Other Harnesses
+### Claude Code
 
-The repository includes manifests for Claude, Cursor, Codex, and Gemini. Install from `https://github.com/notchrisbutler/superduperpowers` at `main`, or use a local checkout while testing harness-specific flows.
+Load this checkout as a local plugin while testing:
+
+```bash
+claude --plugin-dir /path/to/superduperpowers
+```
+
+See [Claude Code Install](docs/claude-code.md) for hook and verification notes.
+
+### Codex
+
+Use the `.codex-plugin/plugin.json` manifest directly through Codex plugin flows, or add the repo-local testing marketplace from `.agents/plugins/marketplace.json` while developing.
+
+See [Codex Install](docs/codex.md) for local marketplace setup and verification prompts.
+
+### Gemini CLI
+
+Link a local checkout for development:
+
+```bash
+gemini extensions link /path/to/superduperpowers
+```
+
+See [Gemini CLI Install](docs/gemini.md) for install and verification prompts.
+
+### Cursor
+
+Use the `.cursor-plugin/plugin.json` manifest from a local checkout while testing Cursor-specific plugin behavior.
+
+See [Cursor Install](docs/cursor.md) for verification prompts.
+
+### Copilot
+
+Copilot support is guidance-compatible during alpha. Use `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, and the Copilot tool mapping reference; SuperDuperPowers does not claim a public Copilot plugin surface yet.
+
+See [Copilot Guidance](docs/copilot.md) for setup notes.
 
 ---
 
@@ -62,6 +98,11 @@ The repository includes manifests for Claude, Cursor, Codex, and Gemini. Install
 | Guide | Description |
 |-------|-------------|
 | [OpenCode Install](.opencode/INSTALL.md) | OpenCode plugin setup and routing verification prompts |
+| [Claude Code Install](docs/claude-code.md) | Claude Code local plugin setup and hook notes |
+| [Codex Install](docs/codex.md) | Codex local plugin and local marketplace setup |
+| [Gemini CLI Install](docs/gemini.md) | Gemini extension setup and verification prompts |
+| [Cursor Install](docs/cursor.md) | Cursor plugin setup and routing verification prompts |
+| [Copilot Guidance](docs/copilot.md) | Copilot custom-instruction and tool-mapping compatibility notes |
 | [Testing](docs/testing.md) | Claude Code integration tests and transcript-based verification |
 | [Windows Hooks](docs/windows/polyglot-hooks.md) | Cross-platform hook behavior and Windows notes |
 | [Changelog](CHANGELOG.md) | Active release history |

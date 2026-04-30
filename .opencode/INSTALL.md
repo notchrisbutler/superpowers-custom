@@ -1,11 +1,12 @@
 # OpenCode Install
 
-SuperDuperPowers can be installed directly from the public GitHub repository. Tagged releases are not available yet, so install from the current `main` branch.
+SuperDuperPowers can be installed directly from the public GitHub repository during alpha development. Tagged marketplace-style release channels are deferred until a future v1 non-alpha release.
 
 Add the plugin to your OpenCode config, typically `opencode.json`:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "plugin": ["superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main"]
 }
 ```
@@ -14,6 +15,7 @@ For local checkout development, use a `git+file` source instead:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "plugin": ["superduperpowers@git+file:///path/to/superduperpowers"]
 }
 ```
@@ -30,7 +32,7 @@ Full-flow prompt:
 Use the superpowers brainstorming skill.
 ```
 
-The `skill` tool should be able to load skills from this checkout.
+Expected: the `skill` tool can load skills from this checkout and the agent follows the brainstorming workflow.
 
 Quick-flow prompt:
 
@@ -38,7 +40,7 @@ Quick-flow prompt:
 Using Superpowers quick flow, make a small README wording improvement.
 ```
 
-The agent should gather only lightweight context, make the bounded change, and avoid full brainstorming, TDD, and planning unless the task escalates.
+Expected: the agent gathers only lightweight context, makes the bounded change, and avoids full brainstorming, TDD, and planning unless the task escalates.
 
 No-Superpowers prompt:
 
@@ -46,4 +48,4 @@ No-Superpowers prompt:
 Fix a typo in README without using Superpowers.
 ```
 
-The agent should not load brainstorming, TDD, or planning skills for the no-Superpowers prompt.
+Expected: the agent does not load brainstorming, TDD, or planning skills for the no-Superpowers prompt.
