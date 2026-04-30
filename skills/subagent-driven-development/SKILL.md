@@ -185,6 +185,7 @@ Finalize: invoke finishing-a-development-branch
 
 **Required workflow skills:**
 - **superpowers:writing-plans** - Creates the plan this skill executes
+- **superpowers:requesting-spec-review** - Spec compliance review routing for lite and full spec reviews
 - **superpowers:requesting-code-review** - Code review guidance for full code reviews
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
 

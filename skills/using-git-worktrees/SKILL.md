@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
+description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans.
 ---
 
 # Using Git Worktrees
@@ -9,7 +9,7 @@ description: Use when starting feature work that needs isolation from current wo
 
 Git worktrees create isolated workspaces sharing the same repository, allowing work on multiple branches simultaneously without switching.
 
-**Core principle:** Systematic directory selection + safety verification = reliable isolation.
+**Core principle:** Project-local OpenCode worktrees + ignore safety + explicit finalization approval = reliable isolation.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
 
@@ -17,81 +17,75 @@ Git worktrees create isolated workspaces sharing the same repository, allowing w
 
 Follow this priority order:
 
-### 1. Check Existing Directories
+### 1. Default Location
 
-```bash
-# Check in priority order
-ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-ls -d worktrees 2>/dev/null      # Alternative
-```
+Default to `{project root}/.opencode/worktrees/`.
 
-**If found:** Use that directory. If both exist, `.worktrees` wins.
+Use this location unless the user explicitly directs a different worktree directory or a repo instruction requires another location.
 
-### 2. Check CLAUDE.md
+### 2. Respect Explicit Overrides
 
-```bash
-grep -i "worktree.*director" CLAUDE.md 2>/dev/null
-```
+If the user or repo instructions specify a directory, use that directory.
 
-**If preference specified:** Use it without asking.
+Still apply ignore safety before creating the worktree.
 
-### 3. Ask User
+### 3. Ask Only When Ambiguous
 
-If no directory exists and no CLAUDE.md preference:
+Ask the user only if repo instructions conflict or the directed location is unsafe/unclear:
 
 ```
-No worktree directory found. Where should I create worktrees?
+Worktree location is unclear. Where should I create worktrees?
 
-1. .worktrees/ (project-local, hidden)
-2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
+1. .opencode/worktrees/ (project-local default)
+2. <repo-directed location>
+3. Custom path
 
 Which would you prefer?
 ```
 
 ## Safety Verification
 
-### For Project-Local Directories (.worktrees or worktrees)
+### Ignore Rules Before Creation
 
-**MUST verify directory is ignored before creating worktree:**
+Before creating any worktree directory, ensure the chosen worktree root is ignored by git and explicitly allowed through `.ignore` for OpenCode visibility.
 
-```bash
-# Check if directory is ignored (respects local, global, and system gitignore)
-git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
+For the default location, add these before creating `.opencode/worktrees/`:
+
+`.gitignore`:
+```gitignore
+.opencode/worktrees/
 ```
 
-**If NOT ignored:**
+`.ignore`:
+```gitignore
+!.opencode/worktrees/
+```
 
-Fix the repository setup before creating worktrees:
-1. Add appropriate line to .gitignore
-2. Commit the change
-3. Proceed with worktree creation
+If the user overrides the worktree location, add that directed worktree root to `.gitignore` and add a matching negated `!` entry to `.ignore` before creation.
+
+After updating ignore files, verify the worktree root is ignored:
+
+```bash
+git check-ignore -q <worktree-root>
+```
+
+Do not commit ignore-file changes unless the user explicitly asks for a commit.
 
 **Why critical:** Prevents accidentally committing worktree contents to repository.
-
-### For Global Directory (~/.config/superpowers/worktrees)
-
-No .gitignore verification needed - outside project entirely.
 
 ## Creation Steps
 
 ### 1. Detect Project Name
 
 ```bash
-project=$(basename "$(git rev-parse --show-toplevel)")
+repo_root=$(git rev-parse --show-toplevel)
+project=$(basename "$repo_root")
 ```
 
 ### 2. Create Worktree
 
 ```bash
-# Determine full path
-case $LOCATION in
-  .worktrees|worktrees)
-    path="$LOCATION/$BRANCH_NAME"
-    ;;
-  ~/.config/superpowers/worktrees/*)
-    path="~/.config/superpowers/worktrees/$project/$BRANCH_NAME"
-    ;;
-esac
+path="$repo_root/.opencode/worktrees/$BRANCH_NAME"
 
 # Create worktree with new branch
 git worktree add "$path" -b "$BRANCH_NAME"
@@ -145,11 +139,10 @@ Ready to implement <feature-name>
 
 | Situation | Action |
 |-----------|--------|
-| `.worktrees/` exists | Use it (verify ignored) |
-| `worktrees/` exists | Use it (verify ignored) |
-| Both exist | Use `.worktrees/` |
-| Neither exists | Check CLAUDE.md → Ask user |
-| Directory not ignored | Add to .gitignore + commit |
+| No override | Use `.opencode/worktrees/` |
+| User/repo overrides location | Use override after ignore safety |
+| Directory not ignored | Add to `.gitignore` before creation |
+| Missing OpenCode allow rule | Add matching `!` entry to `.ignore` |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
@@ -160,10 +153,10 @@ Ready to implement <feature-name>
 - **Problem:** Worktree contents get tracked, pollute git status
 - **Fix:** Always use `git check-ignore` before creating project-local worktree
 
-### Assuming directory location
+### Using the old default
 
-- **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: existing > CLAUDE.md > ask
+- **Problem:** `.worktrees/` or global worktrees hide OpenCode context and drift from repo-local defaults
+- **Fix:** Use `.opencode/worktrees/` unless the user or repo explicitly overrides it
 
 ### Proceeding with failing tests
 
@@ -180,29 +173,52 @@ Ready to implement <feature-name>
 ```
 You: I'm using the using-git-worktrees skill to set up an isolated workspace.
 
-[Check .worktrees/ - exists]
-[Verify ignored - git check-ignore confirms .worktrees/ is ignored]
-[Create worktree: git worktree add .worktrees/auth -b feature/auth]
+[Add `.opencode/worktrees/` to .gitignore before creating the directory]
+[Add `!.opencode/worktrees/` to .ignore]
+[Verify ignored - git check-ignore confirms .opencode/worktrees/ is ignored]
+[Create worktree: git worktree add .opencode/worktrees/auth -b feature/auth]
 [Run npm install]
 [Run npm test - 47 passing]
 
-Worktree ready at /Users/jesse/myproject/.worktrees/auth
+Worktree ready at /Users/jesse/myproject/.opencode/worktrees/auth
 Tests passing (47 tests, 0 failures)
 Ready to implement auth feature
+```
+
+## Finalization
+
+When work in one or more worktrees is complete, stop and ask the user how to proceed before merging, committing, deleting worktrees, or pushing.
+
+Default recommendation:
+- Merge all completed worktree branches into one local feature branch.
+- Confirm whether to commit the unified feature branch locally.
+- Do not push unless the user explicitly directs you to push.
+
+Question to ask:
+
+```
+Worktree work is complete. How should I finalize it?
+
+1. Merge completed worktrees into one local feature branch and confirm before committing
+2. Leave worktrees and branches as-is
+3. Custom finalization
 ```
 
 ## Red Flags
 
 **Never:**
 - Create worktree without verifying it's ignored (project-local)
+- Create `.opencode/worktrees/` before adding ignore rules
+- Use `.worktrees/` or a global directory without explicit override
 - Skip baseline test verification
 - Proceed with failing tests without asking
-- Assume directory location when ambiguous
-- Skip CLAUDE.md check
+- Merge, commit, clean up, or push worktree changes without user approval
+- Push unless the user explicitly directs it
 
 **Always:**
-- Follow directory priority: existing > CLAUDE.md > ask
-- Verify directory is ignored for project-local
+- Default to `.opencode/worktrees/`
+- Add `.gitignore` and `.ignore` entries before creation
+- Verify directory is ignored
 - Auto-detect and run project setup
 - Verify clean test baseline
 

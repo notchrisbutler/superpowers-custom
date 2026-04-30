@@ -58,6 +58,13 @@ You understand 1,2,3,6. Unclear on 4,5.
 
 ## Source-Specific Handling
 
+### From `lite-code-reviewer` or `code-reviewer`
+
+- Treat `lite-code-reviewer` feedback as a cheap checkpoint for obvious regressions.
+- If `lite-code-reviewer` says `Escalate`, request a full `code-reviewer` review before proceeding.
+- Treat `code-reviewer` Critical and Important findings as blocking unless you can technically disprove them.
+- Do not dispatch a reviewer from this skill unless escalation is required; this skill is for evaluating feedback already received.
+
 ### From your human partner
 - **Trusted** - implement after understanding
 - **Still ask** if scope unclear

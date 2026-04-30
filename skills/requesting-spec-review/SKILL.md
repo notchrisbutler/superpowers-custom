@@ -1,0 +1,53 @@
+---
+name: requesting-spec-review
+description: Use when completed work needs a lightweight or full review against a spec, plan, task group, or acceptance criteria.
+---
+
+# Requesting Spec Review
+
+Dispatch the right spec-review subagent to verify the work matches what was requested, without expanding scope.
+
+**Core principle:** Spec review checks compliance; code review checks implementation quality. Use both when the workflow calls for both.
+
+## Reviewer Router
+
+Choose the cheapest reviewer that matches the risk:
+
+| Situation | Agent |
+|---|---|
+| Small, mechanical, or low-risk checkpoint | `lite-spec-reviewer` |
+| Requirements ambiguous or files touched are unexpected | `spec-reviewer` |
+| Normal task group | `spec-reviewer` |
+| High-risk task | `spec-reviewer` |
+| Final implementation or pre-merge review | `spec-reviewer` |
+
+High-risk includes security, auth, data loss, migrations, cross-cutting behavior, broad refactors, unresolved design judgment, skipped validation, or unexpected file changes.
+
+If unsure, use `spec-reviewer`.
+
+## How to Request
+
+1. Identify the requirement source: design, spec, plan section, task group, issue, or acceptance criteria.
+2. Identify the reviewed change range: base SHA, head SHA, file list, or working-tree diff.
+3. Dispatch `lite-spec-reviewer` or `spec-reviewer` based on the router.
+4. If lite review says `Escalate`, request a full `spec-reviewer` review before proceeding.
+
+## Prompt Inputs
+
+- `REQUIREMENTS` - exact spec, plan, task, or acceptance criteria text
+- `CHANGE_RANGE` - base/head SHA or working-tree scope
+- `EXPECTED_FILES` - files expected to change, if known
+- `VALIDATION` - commands run or explicit reason validation was skipped
+- `CONCERNS` - implementer-reported concerns, skipped work, or unexpected behavior
+
+## Red Flags
+
+- Do not let code review replace spec review.
+- Do not ask a lite reviewer to approve ambiguous, broad, high-risk, or final work.
+- Do not proceed when spec review finds missing requirements or unrequested scope.
+- Do not summarize requirements from memory when exact text is available.
+
+## Integration
+
+- Use alongside `requesting-code-review` when both compliance and quality need review.
+- Use `receiving-spec-review` to evaluate and act on returned spec findings.

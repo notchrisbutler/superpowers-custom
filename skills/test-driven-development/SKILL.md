@@ -42,6 +42,27 @@ Write code before the test? Delete it. Start over.
 
 Implement fresh from tests. Period.
 
+## Test Tooling Discovery
+
+Before writing the first failing test, inspect the codebase for existing test tooling and conventions.
+
+Check for project signals such as:
+- Existing test files and directories (`test`, `tests`, `spec`, `__tests__`)
+- Package scripts and config (`package.json`, `vitest`, `jest`, `pytest`, `go test`, `cargo test`, language-specific test config)
+- Existing local validation scripts or harness-specific commands
+
+Use the project's existing test module, suite, command, and style when they are clear.
+
+If no test tooling exists, or you are unsure which module/suite/command the user wants, **STOP and ask the user how to proceed** before creating tests or choosing tools.
+
+Offer concrete options when possible:
+- Add to the existing formal suite
+- Create a local-only spot-check script for the logic
+- Use a broader validation command
+- Defer automated test setup and get explicit permission for a manual check
+
+Never unilaterally introduce a test framework, create a new suite, or decide between local spot checks and full-suite validation.
+
 ## Red-Green-Refactor
 
 ```dot
@@ -113,7 +134,7 @@ Vague name, tests mock not code
 **MANDATORY. Never skip.**
 
 ```bash
-npm test path/to/test.test.ts
+<project test command> path/to/test
 ```
 
 Confirm:
@@ -168,7 +189,7 @@ Don't add features, refactor other code, or "improve" beyond the test.
 **MANDATORY.**
 
 ```bash
-npm test path/to/test.test.ts
+<project test command> path/to/test
 ```
 
 Confirm:
@@ -265,7 +286,7 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 | "Test hard = design unclear" | Listen to test. Hard to test = hard to use. |
 | "TDD will slow me down" | TDD faster than debugging. Pragmatic = test-first. |
 | "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
-| "Existing code has no tests" | You're improving it. Add tests for existing code. |
+| "Existing code has no tests" | Stop and ask before adding tooling or choosing local spot checks. |
 
 ## Red Flags - STOP and Start Over
 
@@ -282,6 +303,8 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 - "Already spent X hours, deleting is wasteful"
 - "TDD is dogmatic, I'm being pragmatic"
 - "This is different because..."
+- "I'll just pick Jest/Vitest/pytest for them"
+- "A quick local script is good enough" without user approval
 
 **All of these mean: Delete code. Start over with TDD.**
 
@@ -341,7 +364,8 @@ Can't check all boxes? You skipped TDD. Start over.
 
 | Problem | Solution |
 |---------|----------|
-| Don't know how to test | Write wished-for API. Write assertion first. Ask your human partner. |
+| Don't know which test tooling to use | Stop and ask your human partner before creating tests. |
+| Don't know how to test within known tooling | Write wished-for API. Write assertion first. Ask your human partner if still unclear. |
 | Test too complicated | Design too complicated. Simplify interface. |
 | Must mock everything | Code too coupled. Use dependency injection. |
 | Test setup huge | Extract helpers. Still complex? Simplify design. |

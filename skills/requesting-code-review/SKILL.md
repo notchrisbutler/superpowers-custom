@@ -1,11 +1,11 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+description: Use when code changes need a lightweight or full code-quality review checkpoint.
 ---
 
 # Requesting Code Review
 
-Dispatch a `code-reviewer` subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation, never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Dispatch the right code-review subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation, never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
 
 **Core principle:** Review at meaningful boundaries. Use lite checkpoints for simple tasks and full reviews for groups, high-risk tasks, and final validation.
 
@@ -22,6 +22,22 @@ Dispatch a `code-reviewer` subagent to catch issues before they cascade. The rev
 - Before refactoring (baseline check)
 - After fixing complex bug
 
+## Reviewer Router
+
+Choose the cheapest reviewer that matches the risk:
+
+| Situation | Agent |
+|---|---|
+| Small, mechanical, or low-risk checkpoint | `lite-code-reviewer` |
+| Task grew larger or riskier than expected | `code-reviewer` |
+| Normal task group | `code-reviewer` |
+| High-risk task | `code-reviewer` |
+| Final implementation or pre-merge review | `code-reviewer` |
+
+High-risk includes security, auth, data loss, migrations, cross-cutting behavior, broad refactors, unclear requirements, unexpected file changes, or failures during validation.
+
+If unsure, use `code-reviewer`.
+
 ## How to Request
 
 **1. Get git SHAs:**
@@ -30,9 +46,9 @@ BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
 
-**2. Dispatch code-reviewer subagent:**
+**2. Dispatch the routed reviewer subagent:**
 
-Use Task tool with `code-reviewer` type, fill template at `code-reviewer.md`
+Use the Task tool with `lite-code-reviewer` or `code-reviewer` based on the router above. For full reviews, fill template at `code-reviewer.md`.
 
 **Placeholders:**
 - `{WHAT_WAS_IMPLEMENTED}` - What you just built
@@ -57,7 +73,7 @@ You: Let me request code review before proceeding.
 BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
 HEAD_SHA=$(git rev-parse HEAD)
 
-[Dispatch code-reviewer subagent]
+[Dispatch code-reviewer subagent because this is a task-group boundary]
   WHAT_WAS_IMPLEMENTED: Verification and repair functions for conversation index
   PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
   BASE_SHA: a7981ec
@@ -95,6 +111,8 @@ You: [Fix progress indicators]
 
 **Never:**
 - Skip the review required by the task or group policy
+- Send small mechanical checkpoints to full review by default when lite review is sufficient
+- Send high-risk, group, final, or pre-merge work to lite review
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback
