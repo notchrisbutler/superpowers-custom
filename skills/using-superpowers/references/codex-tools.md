@@ -91,11 +91,11 @@ Step 1 for how each skill uses these signals.
 ## Codex App Finishing
 
 When the sandbox blocks branch/push operations (detached HEAD in an
-externally managed worktree), the agent commits all work and informs
+externally managed worktree), do not create detached commits. Inform
 the user to use the App's native controls:
 
 - **"Create branch"** — names the branch, then commit/push/PR via App UI
 - **"Hand off to local"** — transfers work to the user's local checkout
 
-The agent can still run tests, stage files, and output suggested branch
-names, commit messages, and PR descriptions for the user to copy.
+The agent can still run tests and output suggested branch names, commit
+messages, and PR descriptions for the user to apply through the App UI.
