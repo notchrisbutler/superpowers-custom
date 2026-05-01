@@ -254,6 +254,89 @@ const appendEvent = (stateDir, event) => {
   fs.appendFileSync(path.join(stateDir, 'events.jsonl'), `${JSON.stringify({ timestamp: nowIso(), ...event })}\n`);
 };
 
+const ensureTrailingNewline = (content) => content.endsWith('\n') ? content : `${content}\n`;
+
+const readTextIfExists = (filePath) => fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
+
+const appendMissingLines = (filePath, lines) => {
+  const existing = readTextIfExists(filePath);
+  const changed = [];
+  let next = existing ? ensureTrailingNewline(existing) : '';
+  const existingLines = existing.split(/\r?\n/);
+  for (const line of lines) {
+    if (!existingLines.includes(line)) {
+      next += `${line}\n`;
+      changed.push(line);
+    }
+  }
+  if (changed.length > 0 || !fs.existsSync(filePath)) {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, next);
+  }
+  return changed;
+};
+
+const docsEntriesFor = (directory, docsRootArg) => {
+  const docsRoot = selectDocsRoot(directory, docsRootArg);
+  const docsPath = toPosixPath(path.posix.join(docsRoot, SDP_DOCS_DIR));
+  return {
+    docsRoot,
+    entries: {
+      gitignore: [`${docsPath}/`],
+      ignore: [`!${docsPath}/`]
+    }
+  };
+};
+
+const runGit = (cwd, args) => {
+  try {
+    return execFileSync('git', args, { cwd, encoding: 'utf8', env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' }, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return null;
+  }
+};
+
+const getGitContext = (directory) => {
+  const root = runGit(directory, ['rev-parse', '--show-toplevel']);
+  if (!root) return { present: false };
+  const currentBranch = runGit(root, ['branch', '--show-current']) || null;
+  const defaultFromOrigin = runGit(root, ['symbolic-ref', 'refs/remotes/origin/HEAD']);
+  const defaultBranch = defaultFromOrigin ? defaultFromOrigin.replace('refs/remotes/origin/', '') : (['main', 'master'].includes(currentBranch) ? currentBranch : null);
+  const upstream = runGit(root, ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const status = runGit(root, ['status', '--porcelain=v1']) || '';
+  const dirtySummary = status ? status.split('\n') : [];
+  let aheadBehind = null;
+  if (upstream) {
+    const counts = runGit(root, ['rev-list', '--left-right', '--count', `${upstream}...HEAD`]);
+    if (counts) {
+      const [behind, ahead] = counts.split(/\s+/).map((value) => Number(value));
+      aheadBehind = { ahead, behind };
+    }
+  }
+  return {
+    present: true,
+    root,
+    currentBranch,
+    defaultBranch,
+    isDefaultBranch: currentBranch === 'main' || currentBranch === 'master' || (!!defaultBranch && currentBranch === defaultBranch),
+    ambiguous: !currentBranch,
+    upstream,
+    aheadBehind,
+    dirty: status.length > 0,
+    dirtySummary,
+    likelyUnrelatedChanges: dirtySummary
+  };
+};
+
+const recommendBranchAction = (git) => {
+  if (!git.present) return 'block';
+  if (git.ambiguous) return 'ask-user';
+  if (git.dirty) return 'ask-user';
+  if (git.isDefaultBranch) return 'create-feature-branch';
+  if (git.aheadBehind?.behind > 0) return 'ask-user';
+  return 'continue';
+};
+
 export const SuperpowersPlugin = async ({ client, directory }) => {
   const homeDir = os.homedir();
   const superpowersAgentsDir = path.resolve(__dirname, '../../agents');
@@ -458,7 +541,39 @@ ${toolMapping}
           docsRoot: tool.schema.string().optional()
         },
         async execute(args, context) {
-          return JSON.stringify({ ok: false, reason: 'not-implemented-until-task-2', operation: args.operation, directory: context.directory || null });
+          const directory = context.directory || context.worktree || process.cwd();
+          const { docsRoot, entries } = docsEntriesFor(directory, args.docsRoot);
+          const gitignorePath = path.join(directory, '.gitignore');
+          const ignorePath = path.join(directory, '.ignore');
+
+          const missingFor = (filePath, required) => {
+            const existing = readTextIfExists(filePath).split(/\r?\n/);
+            return required.filter((entry) => !existing.includes(entry));
+          };
+
+          if (args.operation === 'explain') {
+            return JSON.stringify({ ok: true, docsRoot, entries, reason: 'Generated SuperDuperPowers specs and plans are local-only but must remain readable to OpenCode.' }, null, 2);
+          }
+
+          if (args.operation === 'check') {
+            const missing = {
+              gitignore: missingFor(gitignorePath, entries.gitignore),
+              ignore: missingFor(ignorePath, entries.ignore)
+            };
+            const ok = missing.gitignore.length === 0 && missing.ignore.length === 0;
+            return JSON.stringify({ ok, docsRoot, entries, missing }, null, 2);
+          }
+
+          if (args.operation === 'apply') {
+            const changed = [];
+            const gitignoreChanged = appendMissingLines(gitignorePath, entries.gitignore);
+            const ignoreChanged = appendMissingLines(ignorePath, entries.ignore);
+            changed.push(...gitignoreChanged.map((entry) => ({ file: '.gitignore', entry })));
+            changed.push(...ignoreChanged.map((entry) => ({ file: '.ignore', entry })));
+            return JSON.stringify({ ok: true, docsRoot, entries, changed }, null, 2);
+          }
+
+          return JSON.stringify({ ok: false, reason: `unsupported operation ${args.operation}` }, null, 2);
         }
       }),
       sdp_branch_context: tool({
@@ -467,7 +582,15 @@ ${toolMapping}
           strategy: tool.schema.enum(['worktree', 'feature-branch', 'current-branch']).optional()
         },
         async execute(args, context) {
-          return JSON.stringify({ ok: false, reason: 'not-implemented-until-task-2', strategy: args.strategy || null, directory: context.directory || null });
+          const directory = context.directory || context.worktree || process.cwd();
+          const git = getGitContext(directory);
+          const recommendedAction = recommendBranchAction(git);
+          return JSON.stringify({
+            ok: true,
+            strategy: args.strategy || null,
+            git,
+            recommendedAction
+          }, null, 2);
         }
       })
     },

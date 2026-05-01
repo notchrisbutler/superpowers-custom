@@ -60,6 +60,8 @@ done
 tests=(
     "test-plugin-loading.sh"
     "test-profile-tool.sh"
+    "test-setup-hygiene.sh"
+    "test-branch-context.sh"
 )
 
 # Integration tests (require OpenCode)
