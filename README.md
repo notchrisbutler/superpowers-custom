@@ -21,7 +21,7 @@ Add the plugin to your OpenCode config, typically `opencode.json`:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["superduperpowers@npm:@notchrisbutler/superduperpowers"]
+  "plugin": ["@notchrisbutler/superduperpowers"]
 }
 ```
 

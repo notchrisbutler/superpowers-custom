@@ -1,19 +1,30 @@
 # OpenCode Install
 
-SuperDuperPowers is alpha software. Its workflow sources are harness and model agnostic. OpenCode is the first included harness config, installed as a package-style plugin from this repository. This is not a global npm CLI install path.
+SuperDuperPowers is alpha software. Its workflow sources are harness and model agnostic. OpenCode is the first included harness config, installed as a package-style plugin from npm. This is not a global npm CLI install path.
 
-## Git Package Install
+## npm Package Install
 
 Add the plugin to your OpenCode config, typically `opencode.json`:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main"]
+  "plugin": ["@notchrisbutler/superduperpowers"]
 }
 ```
 
 Start a fresh OpenCode session after changing plugin config so the package is resolved and loaded.
+
+## GitHub Backup Install
+
+If npm resolution is unavailable, use the GitHub repository directly:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git"]
+}
+```
 
 ## Local Checkout Install
 
@@ -27,18 +38,6 @@ For development against a local checkout, use a `git+file` source:
 ```
 
 Use an absolute path to the repository checkout. Restart OpenCode after changing the checkout or plugin config when you need to verify package loading from a clean session.
-
-## Future npm Registry Install
-
-After npm publication is configured and verified, the package name will be `@notchrisbutler/superduperpowers`. Until then, keep using the Git package install above.
-
-```jsonc
-{
-  "$schema": "https://opencode.ai/config.json",
-  // Future npm registry install, not active yet:
-  // "plugin": ["@notchrisbutler/superduperpowers"]
-}
-```
 
 ## What The Plugin Registers
 
