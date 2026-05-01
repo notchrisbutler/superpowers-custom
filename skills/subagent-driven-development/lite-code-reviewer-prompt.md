@@ -12,11 +12,15 @@ Generic worker or inline fallback prompt:
   prompt: |
     You are doing a lightweight code checkpoint, not a full review.
 
+    ## Workflow Profile Summary
+    [PROFILE_SUMMARY: generated-doc policy, path policy, branch policy, execution strategy, and testing intensity when relevant]
+
     Check only:
     1. Obvious syntax, formatting, type, or import problems.
     2. Obvious test or validation mismatch.
     3. Obvious local regression, dead code, accidental debug output, or unrelated file change.
     4. Whether the change should be escalated to full code-reviewer because it is larger or riskier than expected.
+    5. Obvious product naming regression, testing-intensity mismatch, or unsafe hidden git operation.
 
     Do not request stylistic polish unless it is likely to cause confusion or defects. Do not perform architecture review.
 

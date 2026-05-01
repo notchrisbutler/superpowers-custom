@@ -56,6 +56,7 @@ Use the active harness's subagent or worker-dispatch mechanism with the selected
 - `{BASE_SHA}` - Starting commit
 - `{HEAD_SHA}` - Ending commit
 - `{DESCRIPTION}` - Brief summary
+- `{PROFILE_SUMMARY}` - compact workflow profile summary including generated-doc policy, path policy, branch policy, execution strategy, and testing intensity when relevant.
 
 **3. Act on feedback:**
 - Fix Critical issues immediately
@@ -75,7 +76,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 [Dispatch lite-code-reviewer subagent because this is a normal parent task-scope boundary]
   WHAT_WAS_IMPLEMENTED: Verification and repair functions for conversation index
-  PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
+  PLAN_OR_REQUIREMENTS: Task 2 from {DOCS_ROOT}/superduperpowers/plans/deployment-plan.md
   BASE_SHA: a7981ec
   HEAD_SHA: 3df7661
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
