@@ -12,6 +12,9 @@
     "version:check": "scripts/bump-version.sh --check",
     "version:audit": "scripts/bump-version.sh --audit"
   },
+  "dependencies": {
+    "@opencode-ai/plugin": "1.14.30"
+  },
   "publishConfig": {
     "access": "public"
   },

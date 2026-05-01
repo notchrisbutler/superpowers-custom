@@ -78,6 +78,9 @@ const mod = await import(path.join(process.env.SUPERPOWERS_DIR, pkg.main));
 if (!mod.SuperpowersPlugin) throw new Error('missing SuperpowersPlugin export');
 const hooks = await mod.SuperpowersPlugin({});
 if (typeof hooks.config !== 'function') throw new Error('missing config hook');
+if (!hooks.tool?.sdp_profile) throw new Error('missing sdp_profile tool');
+if (!hooks.tool?.sdp_setup_hygiene) throw new Error('missing sdp_setup_hygiene tool');
+if (!hooks.tool?.sdp_branch_context) throw new Error('missing sdp_branch_context tool');
 console.log(`${pkg.name} main import and hook ok`);
 NODE
 ) || {
@@ -175,11 +178,13 @@ const output = {
 await hooks['experimental.chat.messages.transform']({}, output);
 await hooks['experimental.chat.messages.transform']({}, output);
 const firstPart = output.messages[0].parts[0];
-if (!firstPart.text.startsWith('<EXTREMELY_IMPORTANT>\nYou have superpowers.')) throw new Error('bootstrap was not prepended');
+if (!firstPart.text.startsWith('<EXTREMELY_IMPORTANT>\nYou have SuperDuperPowers.')) throw new Error('bootstrap was not prepended');
 if (output.messages[0].parts[1]?.text !== 'hello') throw new Error('original user text was not preserved after bootstrap');
 const text = output.messages[0].parts.map(part => part.text || '').join('\n');
-const count = (text.match(/You have superpowers\./g) || []).length;
+const count = (text.match(/You have SuperDuperPowers\./g) || []).length;
 if (count !== 1) throw new Error(`expected one bootstrap injection, got ${count}`);
+if (!text.includes('superduperpowers')) throw new Error('bootstrap is missing superduperpowers alias language');
+if (!text.includes('sdp_profile')) throw new Error('bootstrap is missing workflow profile tool mapping');
 console.log('bootstrap injected once');
 NODE
 echo "  [PASS] Bootstrap transform injects once"
