@@ -3,6 +3,10 @@
   "version": "2026.4.30",
   "type": "module",
   "main": ".opencode/plugins/superpowers.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/notchrisbutler/superduperpowers"
+  },
   "scripts": {
     "version:next": "scripts/bump-version.sh --next",
     "version:check": "scripts/bump-version.sh --check",

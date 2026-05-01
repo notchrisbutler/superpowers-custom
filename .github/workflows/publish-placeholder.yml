@@ -57,6 +57,10 @@ jobs:
             version,
             description: 'Placeholder package reserving the SuperDuperPowers npm name.',
             license: 'MIT',
+            repository: {
+              type: 'git',
+              url: 'https://github.com/notchrisbutler/superduperpowers'
+            },
             private: false,
             publishConfig: {
               access: 'public'
