@@ -5,7 +5,9 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute implementation plans with subagents while keeping harness todos flat and applying proportional review at meaningful task boundaries.
+Execute implementation plans with subagents while keeping harness todos flat and using proportional review at meaningful task boundaries.
+
+If the active harness does not support subagents or worker dispatch, use `executing-plans` in the main session and preserve the same flat task labels and review checkpoints.
 
 **Why subagents:** You delegate work to specialized agents with isolated context. By precisely crafting their instructions and context, you keep them focused while preserving your own context for coordination.
 
@@ -41,7 +43,7 @@ digraph when_to_use {
 
 1. Read the plan once.
 2. Extract task groups, tasks, dependencies, validation commands, and review policies.
-3. Replace any prior planning/brainstorming todos with one flat TodoWrite list.
+3. Replace any prior planning/brainstorming todos with one flat harness todo list.
 4. Execute each flat todo in dependency order.
 5. Run lite checkpoints for simple task todos.
 6. Run full task-scope spec review and lite task-scope code review at task boundaries.
@@ -147,11 +149,11 @@ You: I'm using Subagent-Driven Development to execute this plan.
 
 [Read plan file once: docs/superpowers/plans/feature-plan.md]
 [Extract groups and tasks with full text and context]
-[Create flat TodoWrite with setup, Task N.M subtasks, Task N reviews, final validation, and finalize items]
+[Create flat harness todos with setup, Task N.M subtasks, Task N reviews, final validation, and finalize items]
 
 Task 1.1: Hook installation script
 [Dispatch implementation subagent with full task text + context]
-Implementer: DONE, tests passing, committed.
+Implementer: DONE, tests passing, changed files reported.
 
 Task 1.1: Lite review checkpoint
 [Dispatch lite-spec-reviewer and/or lite-code-reviewer if useful]
@@ -176,7 +178,7 @@ Finalize: invoke finishing-a-development-branch
 **Never:**
 - Start implementation on main/master branch without explicit user consent
 - Treat current-branch execution as a worktree cleanup/merge flow
-- Create nested TodoWrite structures; use flat labels instead
+- Create nested harness todo structures; use flat labels instead
 - Skip the review required by the task review policy
 - Proceed with unfixed full-review issues
 - Dispatch multiple implementation subagents in parallel if they can conflict

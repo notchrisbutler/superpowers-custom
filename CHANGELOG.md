@@ -20,3 +20,8 @@ Initial alpha release of SuperDuperPowers.
 - Clarified development finalization workflows so current-branch execution stays locally committed while worktree branches merge back only to their parent/source branch
 - Registered bundled reviewer agents in the OpenCode plugin so execution workflows can dispatch `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer` as named subagents
 - Refined full-workflow execution todos to use `Task N` / `Task N.M` labels, full task-scope spec reviews, lite task-scope code reviews, and final full task-set reviews
+- Added root `AGENTS.md` as the canonical cross-harness contributor guidance with Claude and Gemini files reduced to adapter shims
+- Added a harness compatibility matrix documenting install paths, skill and agent discovery, bootstrap behavior, permissions, verification prompts, and fallback behavior
+- Clarified marketplace/plugin-repository installation as the primary product path and removed global npm CLI installation framing
+- Made workflow commit behavior conditional on explicit user request and aligned integration docs/tests around changed-file reporting instead of automatic commits
+- Aligned reviewer-agent fallback prompts with the canonical reviewer definitions and made skill wording more marketplace-appropriate

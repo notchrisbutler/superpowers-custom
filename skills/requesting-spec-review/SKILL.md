@@ -29,7 +29,7 @@ If unsure, use `spec-reviewer`.
 
 1. Identify the requirement source: design, spec, plan section, task scope, issue, or acceptance criteria.
 2. Identify the reviewed change range: base SHA, head SHA, file list, or working-tree diff.
-3. Dispatch `lite-spec-reviewer` or `spec-reviewer` based on the router.
+3. Use the active harness's subagent or worker-dispatch mechanism with the selected reviewer. If named reviewer agents are unavailable, use the fallback prompt content and run the review as an inline or generic-worker review.
 4. If lite review says `Escalate`, request a full `spec-reviewer` review before proceeding.
 
 ## Prompt Inputs

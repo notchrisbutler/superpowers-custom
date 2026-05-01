@@ -48,7 +48,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **2. Dispatch the routed reviewer subagent:**
 
-Use the Task tool with `lite-code-reviewer` or `code-reviewer` based on the router above. For full reviews, fill template at `code-reviewer.md`.
+Use the active harness's subagent or worker-dispatch mechanism with the selected reviewer. If named reviewer agents are unavailable, use the fallback prompt content and run the review as an inline or generic-worker review. For full reviews, fill template at `code-reviewer.md`.
 
 **Placeholders:**
 - `{WHAT_WAS_IMPLEMENTED}` - What you just built
@@ -60,7 +60,7 @@ Use the Task tool with `lite-code-reviewer` or `code-reviewer` based on the rout
 **3. Act on feedback:**
 - Fix Critical issues immediately
 - Fix Important issues before proceeding
-- Note Minor issues for later
+- Note Suggestions for later
 - Push back if reviewer is wrong (with reasoning)
 
 ## Example
@@ -81,13 +81,10 @@ HEAD_SHA=$(git rev-parse HEAD)
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
 
 [Subagent returns]:
-  Strengths: Clean architecture, real tests
-  Issues:
-    Important: Missing progress indicators
-    Minor: Magic number (100) for reporting interval
-  Assessment: Ready to proceed
+  Lite code checkpoint: Escalate
+  - Reason: Unexpected unrelated file change detected; task grew beyond a simple local checkpoint.
 
-You: [Fix progress indicators]
+You: [Escalate to code-reviewer or remove the unrelated file change before proceeding]
 [Continue to Task 3]
 ```
 

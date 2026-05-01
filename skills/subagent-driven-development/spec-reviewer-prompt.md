@@ -2,10 +2,12 @@
 
 Use named `spec-reviewer` when available. Use this fallback template when named agents are unavailable.
 
+Fallback alignment: this prompt is for harnesses that cannot dispatch the canonical named reviewer agent from `agents/`. Preserve the corresponding canonical reviewer behavior and output priorities when adapting this prompt.
+
 **Purpose:** Verify implementer built what was requested (nothing more, nothing less)
 
 ```
-Task tool (general-purpose):
+Generic worker or inline fallback prompt:
   description: "Review spec compliance for Task N"
   prompt: |
     You are reviewing whether an implementation matches its specification.
@@ -20,8 +22,8 @@ Task tool (general-purpose):
 
     ## CRITICAL: Do Not Trust the Report
 
-    The implementer finished suspiciously quickly. Their report may be incomplete,
-    inaccurate, or optimistic. You MUST verify everything independently.
+    The implementer's report may be incomplete, inaccurate, or optimistic.
+    You MUST verify everything independently.
 
     **DO NOT:**
     - Take their word for what they implemented
@@ -53,10 +55,20 @@ Task tool (general-purpose):
     - Did they solve the wrong problem?
     - Did they implement the right feature but wrong way?
 
+    **Validation evidence:**
+    - Were required tests, commands, or manual validations run?
+    - Treat missing validation as a spec issue when the plan required it.
+
     **Verify by reading code, not by trusting report.**
 
     Report:
+    ## Spec Review
+
     Result: Approved | Changes Required
+
     Findings:
     - [Critical|Important|Minor] `path:line` - Issue and required fix.
+
+    Coverage Notes:
+    - Brief note on what matched the spec.
 ```

@@ -1,6 +1,6 @@
 # OpenCode Install
 
-SuperDuperPowers can be installed directly from the public GitHub repository during alpha development. Tagged marketplace-style release channels are deferred until a future v1 non-alpha release.
+SuperDuperPowers is alpha software. The intended product path is marketplace or harness plugin/extension installation; until that is available, use the documented local checkout or GitHub repository install path. This is not a global npm CLI install path. See [Harness Compatibility](../docs/compatibility.md) for capability differences and fallback behavior.
 
 Add the plugin to your OpenCode config, typically `opencode.json`:
 

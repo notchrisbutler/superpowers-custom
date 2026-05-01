@@ -1,5 +1,7 @@
 # Code Review Agent
 
+Fallback alignment: this prompt is for harnesses that cannot dispatch the canonical named reviewer agent from `agents/`. Preserve the corresponding canonical reviewer behavior and output priorities when adapting this prompt.
+
 You are reviewing code changes for production readiness.
 
 **Your task:**
@@ -73,7 +75,7 @@ git diff {BASE_SHA}..{HEAD_SHA}
 #### Important (Should Fix)
 [Architecture problems, missing features, poor error handling, test gaps]
 
-#### Minor (Nice to Have)
+#### Suggestions (Nice to Have)
 [Code style, optimization opportunities, documentation improvements]
 
 **For each issue:**
@@ -87,7 +89,9 @@ git diff {BASE_SHA}..{HEAD_SHA}
 
 ### Assessment
 
-**Ready to merge?** [Yes/No/With fixes]
+**Result:** Approved | Changes Required
+
+**Merge readiness:** Ready | Ready with follow-up suggestions | Not ready
 
 **Reasoning:** [Technical assessment in 1-2 sentences]
 
@@ -128,7 +132,7 @@ git diff {BASE_SHA}..{HEAD_SHA}
    - Issue: Invalid dates silently return no results
    - Fix: Validate ISO format, throw error with example
 
-#### Minor
+#### Suggestions
 1. **Progress indicators**
    - File: indexer.ts:130
    - Issue: No "X of Y" counter for long operations
@@ -140,7 +144,9 @@ git diff {BASE_SHA}..{HEAD_SHA}
 
 ### Assessment
 
-**Ready to merge: With fixes**
+**Result:** Changes Required
+
+**Merge readiness:** Not ready
 
 **Reasoning:** Core implementation is solid with good architecture and tests. Important issues (help text, date validation) are easily fixed and don't affect core functionality.
 ```

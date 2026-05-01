@@ -41,6 +41,8 @@ If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill appears t
 
 Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
 
+Canonical workflow language describes intent first. Harness-specific tool names are examples. When a skill mentions a tool that is unavailable in the active harness, use the documented local equivalent or the fallback workflow for that capability.
+
 # Using Skills
 
 ## The Rule
@@ -63,7 +65,7 @@ digraph skill_flow {
     "Invoke relevant skill" [shape=box];
     "Announce: 'Using [skill] to [purpose]'" [shape=box];
     "Has checklist?" [shape=diamond];
-    "Create TodoWrite todo per item" [shape=box];
+    "Create harness todo per item" [shape=box];
     "Follow skill exactly" [shape=box];
     "Quick Superpowers flow" [shape=box];
     "No Superpowers" [shape=box];
@@ -84,9 +86,9 @@ digraph skill_flow {
     "Lightweight Superpowers useful?" -> "Ask route question" [label="unclear"];
     "Invoke relevant skill" -> "Announce: 'Using [skill] to [purpose]'";
     "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
-    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
+    "Has checklist?" -> "Create harness todo per item" [label="yes"];
     "Has checklist?" -> "Follow skill exactly" [label="no"];
-    "Create TodoWrite todo per item" -> "Follow skill exactly";
+    "Create harness todo per item" -> "Follow skill exactly";
     "Follow skill exactly" -> "Respond or act";
     "Quick Superpowers flow" -> "Respond or act";
     "No Superpowers" -> "Respond or act";

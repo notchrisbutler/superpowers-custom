@@ -7,7 +7,7 @@ description: Use when about to claim work is complete, fixed, or passing, before
 
 ## Overview
 
-Claiming work is complete without verification is dishonesty, not efficiency.
+Claiming work is complete without verification is unreliable and creates avoidable risk.
 
 **Core principle:** Evidence before claims, always.
 
@@ -34,7 +34,7 @@ BEFORE claiming any status or expressing satisfaction:
    - If YES: State claim WITH evidence
 5. ONLY THEN: Make the claim
 
-Skip any step = lying, not verifying
+Skipping a required step means the work is not verified.
 ```
 
 ## Common Failures
@@ -55,10 +55,10 @@ Skip any step = lying, not verifying
 - Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
 - About to commit/push/PR without verification
 - Trusting agent success reports
-- Relying on partial verification
+- Depending on partial verification
 - Thinking "just this once"
 - Tired and wanting work over
-- **ANY wording implying success without having run verification**
+- **ANY wording suggesting success without having run verification**
 
 ## Rationalization Prevention
 
@@ -108,11 +108,11 @@ Skip any step = lying, not verifying
 ## Why This Matters
 
 From 24 failure memories:
-- your human partner said "I don't believe you" - trust broken
+- the user said "I don't believe you" - trust broken
 - Undefined functions shipped - would crash
 - Missing requirements shipped - incomplete features
 - Time wasted on false completion → redirect → rework
-- Violates: "Honesty is a core value. If you lie, you'll be replaced."
+- Violates: do not make success claims without fresh evidence.
 
 ## When To Apply
 

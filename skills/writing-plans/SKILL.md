@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase or local conventions. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered tasks. DRY. YAGNI. TDD. Include commit steps only when the user explicitly requested commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -17,6 +17,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
+- If that path is ignored in the active repository, treat the plan as local-only unless the user chooses a trackable path or explicitly requests force-adding ignored docs.
 
 ## Scope Check
 
@@ -103,12 +104,9 @@ def function(input):
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Report changed files**
 
-```bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
-```
+Report the files changed in this task and whether tests passed. Do not commit unless the user explicitly requested commits.
 
 #### Task N Review
 
@@ -131,7 +129,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact file paths always
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
-- DRY, YAGNI, TDD, frequent commits
+- DRY, YAGNI, TDD, and no automatic commits without explicit user request
 - Conceptual groups are allowed in plan docs; harness todos must be flat and ordered by dependency
 - Include an explicit review policy per group
 
@@ -163,8 +161,8 @@ After saving the plan, offer execution choice:
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Flat, dependency-ordered TodoWrite list with `Task N` / `Task N.M` labels and review checkpoints
+- Flat, dependency-ordered harness todo list with `Task N` / `Task N.M` labels and review checkpoints
 
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
-- Flat, dependency-ordered TodoWrite list with `Task N` / `Task N.M` labels and review checkpoints
+- Flat, dependency-ordered harness todo list with `Task N` / `Task N.M` labels and review checkpoints

@@ -76,7 +76,7 @@ Which option?
 
 Use only when finishing from a worktree or temporary task branch. Merge back into the parent/source branch the temporary branch was spawned from, unless the user explicitly selected a different local target.
 
-If finishing from a durable feature branch, do not merge anywhere. Commit locally if needed and leave push/PR creation to the user unless they explicitly request it.
+If finishing from a durable feature branch, do not merge anywhere. Commit locally only if the user explicitly requested a commit, and leave push/PR creation to the user unless they explicitly request it.
 
 ```bash
 # Switch to target local branch

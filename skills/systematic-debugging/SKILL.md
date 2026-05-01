@@ -7,7 +7,7 @@ description: Use when the user asks for debugging/root-cause analysis, when an i
 
 ## Overview
 
-Random fixes waste time and create new bugs. Quick patches mask underlying issues.
+Random fixes waste time and create new bugs. Quick patches mask root issues.
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
 
@@ -122,7 +122,7 @@ You MUST complete each phase before proceeding to the next.
 2. **Compare Against References**
    - If implementing pattern, read reference implementation COMPLETELY
    - Don't skim - read every line
-   - Understand the pattern fully before applying
+   - Understand the pattern fully before using
 
 3. **Identify Differences**
    - What's different between working and broken?
@@ -200,7 +200,7 @@ You MUST complete each phase before proceeding to the next.
    - Are we "sticking with it through sheer inertia"?
    - Should we refactor architecture vs. continue fixing symptoms?
 
-   **Discuss with your human partner before attempting more fixes**
+   **Discuss with the user before attempting more fixes**
 
    This is NOT a failed hypothesis - this is a wrong architecture.
 
@@ -223,7 +223,7 @@ If you catch yourself thinking:
 
 **If 3+ fixes failed:** Question the architecture (see Phase 4.5)
 
-## your human partner's Signals You're Doing It Wrong
+## The User's Signals You're Doing It Wrong
 
 **Watch for these redirections:**
 - "Is that not happening?" - You assumed without verifying

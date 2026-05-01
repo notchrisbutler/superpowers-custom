@@ -29,7 +29,7 @@ This project is built from Jesse Vincent's [obra/superpowers](https://github.com
 
 ## Quick Start
 
-SuperDuperPowers is alpha software. Install from the current `main` branch or a local checkout until a v1 non-alpha release is published. Public marketplace publication is planned for v1; current manifests and local catalogs are for development and compatibility testing.
+SuperDuperPowers is alpha software. The intended product path is marketplace or harness plugin/extension installation. Until public marketplace publication exists, install from the current `main` branch or a local checkout for development and compatibility testing. This project is not distributed as a global npm CLI package.
 
 ### OpenCode
 
@@ -103,7 +103,8 @@ See [Copilot Guidance](docs/copilot.md) for setup notes.
 | [Gemini CLI Install](docs/gemini.md) | Gemini extension setup and verification prompts |
 | [Cursor Install](docs/cursor.md) | Cursor plugin setup and routing verification prompts |
 | [Copilot Guidance](docs/copilot.md) | Copilot custom-instruction and tool-mapping compatibility notes |
-| [Testing](docs/testing.md) | Claude Code integration tests and transcript-based verification |
+| [Harness Compatibility](docs/compatibility.md) | Capability matrix, fallback behavior, and smoke prompts by harness |
+| [Testing](docs/testing.md) | Development-checkout integration tests and transcript-based verification |
 | [Windows Hooks](docs/windows/polyglot-hooks.md) | Cross-platform hook behavior and Windows notes |
 | [Changelog](CHANGELOG.md) | Active release history |
 | [Acknowledgements](ACKNOWLEDGEMENTS.md) | Baseline platform attribution |

@@ -256,13 +256,16 @@ else
 fi
 echo ""
 
-# Test 7: Git commits show proper workflow
-echo "Test 7: Git commit history..."
+# Test 7: Changed files show proper workflow without automatic commits
+echo "Test 7: Changed file reporting..."
+status_output=$(git -C "$TEST_PROJECT" status --short)
 commit_count=$(git -C "$TEST_PROJECT" log --oneline | wc -l)
-if [ "$commit_count" -gt 2 ]; then  # Initial + at least 2 task commits
-    echo "  [PASS] Multiple commits created ($commit_count total)"
+if echo "$status_output" | grep -q "src/math.js" && echo "$status_output" | grep -q "test/math.test.js" && [ "$commit_count" -eq 1 ]; then
+    echo "  [PASS] Changed files and verification evidence recorded"
 else
-    echo "  [FAIL] Too few commits ($commit_count, expected >2)"
+    echo "  [FAIL] Expected changed files without automatic commits"
+    echo "$status_output"
+    echo "  Commit count: $commit_count"
     FAILED=$((FAILED + 1))
 fi
 echo ""

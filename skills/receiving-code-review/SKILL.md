@@ -49,7 +49,7 @@ WHY: Items may be related. Partial understanding = wrong implementation.
 
 **Example:**
 ```
-your human partner: "Fix 1-6"
+the user: "Fix 1-6"
 You understand 1,2,3,6. Unclear on 4,5.
 
 ❌ WRONG: Implement 1,2,3,6 now, ask about 4,5 later
@@ -65,7 +65,7 @@ You understand 1,2,3,6. Unclear on 4,5.
 - Treat `code-reviewer` Critical and Important findings as blocking unless you can technically disprove them.
 - Do not dispatch a reviewer from this skill unless escalation is required; this skill is for evaluating feedback already received.
 
-### From your human partner
+### From the user
 - **Trusted** - implement after understanding
 - **Still ask** if scope unclear
 - **No performative agreement**
@@ -86,11 +86,11 @@ IF suggestion seems wrong:
 IF can't easily verify:
   Say so: "I can't verify this without [X]. Should I [investigate/ask/proceed]?"
 
-IF conflicts with your human partner's prior decisions:
-  Stop and discuss with your human partner first
+IF conflicts with the user's prior decisions:
+  Stop and discuss with the user first
 ```
 
-**your human partner's rule:** "External feedback - be skeptical, but check carefully"
+**the user's rule:** "External feedback - be skeptical, but check carefully"
 
 ## YAGNI Check for "Professional" Features
 
@@ -102,7 +102,7 @@ IF reviewer suggests "implementing properly":
   IF used: Then implement properly
 ```
 
-**your human partner's rule:** "You and reviewer both report to me. If we don't need this feature, don't add it."
+**the user's rule:** "You and reviewer both report to me. If we don't need this feature, don't add it."
 
 ## Implementation Order
 
@@ -125,15 +125,15 @@ Push back when:
 - Violates YAGNI (unused feature)
 - Technically incorrect for this stack
 - Legacy/compatibility reasons exist
-- Conflicts with your human partner's architectural decisions
+- Conflicts with the user's architectural decisions
 
 **How to push back:**
 - Use technical reasoning, not defensiveness
 - Ask specific questions
 - Reference working tests/code
-- Involve your human partner if architectural
+- Involve the user if architectural
 
-**Signal if uncomfortable pushing back out loud:** "Strange things are afoot at the Circle K"
+**Signal if uncomfortable pushing back out loud:** "I need to pause and verify this review feedback before applying it."
 
 ## Acknowledging Correct Feedback
 
@@ -202,14 +202,14 @@ Reviewer: "Implement proper metrics tracking with database, date filters, CSV ex
 
 **Unclear Item (Good):**
 ```
-your human partner: "Fix items 1-6"
+the user: "Fix items 1-6"
 You understand 1,2,3,6. Unclear on 4,5.
 ✅ "Understand 1,2,3,6. Need clarification on 4 and 5 before implementing."
 ```
 
 ## GitHub Thread Replies
 
-When replying to inline review comments on GitHub, reply in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.
+When responding to inline review comments on GitHub, respond in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.
 
 ## The Bottom Line
 

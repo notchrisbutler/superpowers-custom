@@ -2,9 +2,26 @@
 
 This document describes how to test Superpowers skills, particularly the integration tests for complex skills like `subagent-driven-development`.
 
+These tests are for development checkouts. Packaged marketplace/plugin artifacts may include this document without shipping the `tests/` directory; clone or use a local repository checkout before running the commands below.
+
 ## Overview
 
 Testing skills that involve subagents, workflows, and complex interactions requires running actual Claude Code sessions in headless mode and verifying their behavior through session transcripts.
+
+## Cross-Harness Smoke Checks
+
+Use these checks after changing skills, agents, manifests, or harness docs. Not every harness supports the same mechanics; verify the intended behavior for that harness.
+
+| Harness | Smoke Check | Expected Result |
+| --- | --- | --- |
+| Claude Code | Load local plugin and ask what SuperDuperPowers skills are available. | Skills appear and reviewer agents are available. |
+| OpenCode | Load plugin from config and ask what SuperDuperPowers skills are available. | Plugin registers skills and reviewer agents; bootstrap appears once. |
+| Codex | Use plugin or repo skills path and invoke a SuperDuperPowers skill explicitly. | Skill loads; `AGENTS.md` guidance is available; named-agent fallback is documented. |
+| Gemini CLI | Link extension and start a new session. | `GEMINI.md` context loads routing and Gemini tool mapping. |
+| Cursor | Load local plugin manifest. | Skills and agents are exposed where the active Cursor build supports them. |
+| Copilot | Read guidance docs from a repo checkout. | Docs do not claim unsupported plugin behavior. |
+
+See [Harness Compatibility](compatibility.md) for capability differences, fallback behavior, and smoke prompts.
 
 ## Test Structure
 
@@ -60,7 +77,7 @@ The integration test verifies the `subagent-driven-development` skill correctly:
    - TodoWrite was used for tracking
    - Implementation files were created
    - Tests pass
-   - Git commits show proper workflow
+   - Changed files and verification evidence show proper workflow
 4. **Token Analysis**: Shows token usage breakdown by subagent
 
 ### Test Output
@@ -90,8 +107,8 @@ Test 6: Implementation verification...
   [PASS] test/math.test.js created
   [PASS] Tests pass
 
-Test 7: Git commit history...
-  [PASS] Multiple commits created (3 total)
+Test 7: Changed file reporting...
+  [PASS] Changed files and verification evidence recorded
 
 Test 8: No extra features added...
   [PASS] No extra features added
@@ -260,7 +277,7 @@ python3 "$SCRIPT_DIR/analyze-token-usage.py" "$SESSION_FILE"
 3. **Grant permissions**: Use `--permission-mode bypassPermissions` and `--add-dir`
 4. **Run from plugin dir**: Skills only load when running from the repository directory
 5. **Show token usage**: Always include token analysis for cost visibility
-6. **Test real behavior**: Verify actual files created, tests passing, commits made
+6. **Test real behavior**: Verify actual files created, tests passing, and changed-file reporting
 
 ## Session Transcript Format
 

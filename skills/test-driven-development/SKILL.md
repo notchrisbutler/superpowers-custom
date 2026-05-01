@@ -364,8 +364,8 @@ Can't check all boxes? You skipped TDD. Start over.
 
 | Problem | Solution |
 |---------|----------|
-| Don't know which test tooling to use | Stop and ask your human partner before creating tests. |
-| Don't know how to test within known tooling | Write wished-for API. Write assertion first. Ask your human partner if still unclear. |
+| Don't know which test tooling to use | Stop and ask the user before creating tests. |
+| Don't know how to test within known tooling | Write wished-for API. Write assertion first. Ask the user if still unclear. |
 | Test too complicated | Design too complicated. Simplify interface. |
 | Must mock everything | Code too coupled. Use dependency injection. |
 | Test setup huge | Extract helpers. Still complex? Simplify design. |
@@ -390,4 +390,4 @@ Production code → test exists and failed first
 Otherwise → not TDD
 ```
 
-No exceptions without your human partner's permission.
+No exceptions without the user's permission.

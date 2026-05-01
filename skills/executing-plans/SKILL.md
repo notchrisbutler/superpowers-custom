@@ -9,17 +9,19 @@ description: Use when you have a written implementation plan to execute in a sep
 
 Load plan, review critically, execute flat parent tasks and subtasks, report when complete.
 
+If the active harness does not support subagents or worker dispatch, use `executing-plans` in the main session and preserve the same flat task labels and review checkpoints.
+
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
+**Note:** Tell the user that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
 
 ## The Process
 
 ### Step 1: Load and Review Plan
 1. Read plan file
 2. Review critically - identify any questions or concerns about the plan
-3. If concerns: Raise them with your human partner before starting
-4. If no concerns: Create a flat, dependency-ordered TodoWrite list and proceed
+3. If concerns: Raise them with the user before starting
+4. If no concerns: Create a flat, dependency-ordered harness todo list and proceed
 
 ### Step 2: Execute Tasks
 
@@ -78,7 +80,7 @@ After all tasks complete and verified:
 
 ## Remember
 - Review plan critically first
-- Keep TodoWrite flat; preserve conceptual groups with `Task N` / `Task N.M` labels and ordering
+- Keep harness todos flat; preserve conceptual groups with `Task N` / `Task N.M` labels and ordering
 - Follow plan steps exactly
 - Don't skip verifications
 - Reference skills when plan says to

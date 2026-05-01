@@ -1,6 +1,6 @@
 # Claude Code Install
 
-SuperDuperPowers can be loaded as a Claude Code plugin from a local checkout during alpha development. Public marketplace publication is deferred until a future v1 non-alpha release.
+SuperDuperPowers is alpha software. The intended product path is marketplace or harness plugin/extension installation; until that is available, use the documented local checkout or GitHub repository install path. This is not a global npm CLI install path. See [Harness Compatibility](compatibility.md) for capability differences and fallback behavior.
 
 ## Local Development
 
