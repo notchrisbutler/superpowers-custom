@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase or local conventions. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered tasks. DRY. YAGNI. TDD. Include commit steps only when the user explicitly requested commits.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase or local conventions. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered tasks. DRY. YAGNI. TDD. Include local commit steps at the approved plan and task-scope boundaries when workflow commits are enabled.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -106,13 +106,14 @@ Expected: PASS
 
 - [ ] **Step 5: Report changed files**
 
-Report the files changed in this task and whether tests passed. Do not commit unless the user explicitly requested commits.
+Report the files changed in this task and whether tests passed. The coordinator commits at the parent task boundary when workflow commits are enabled.
 
 #### Task N Review
 
 - [ ] Run full spec review for Task N
 - [ ] Run lite code review for Task N
 - [ ] Run task-scope validation command: `pytest tests/path -v`
+- [ ] Commit Task N changes locally if workflow commits are enabled
 ````
 
 ## No Placeholders
@@ -129,7 +130,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact file paths always
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
-- DRY, YAGNI, TDD, and no automatic commits without explicit user request
+- DRY, YAGNI, TDD, and local commits at approved plan and task-scope boundaries when workflow commits are enabled
 - Conceptual groups are allowed in plan docs; harness todos must be flat and ordered by dependency
 - Include an explicit review policy per group
 
@@ -147,9 +148,19 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
+## Plan Review And Commit Gate
+
+After saving and self-reviewing the plan, ask the user to review it before execution:
+
+> "Plan written to `<path>`. Please review it and let me know if you want changes before execution."
+
+Wait for the user's response. If they request changes, update the plan and re-run self-review. Only proceed to execution handoff once the user approves the written plan.
+
+When workflow commits are enabled, commit the approved plan locally before offering execution. This matches the design flow: approved spec commit, approved plan commit, then task-scope commits during execution. Do not push unless the user explicitly requests it.
+
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After the user approves the plan and the plan commit gate is handled, offer execution choice:
 
 **"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
 

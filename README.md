@@ -123,6 +123,8 @@ Superpowers is opt-in by default for normal coding turns.
 
 Available full-flow workflows include brainstorming, planning, execution, TDD, debugging, verification, spec review, code review, and development-branch completion.
 
+When a user opts into the full Superpowers spec -> plan -> execution workflow, local commits are part of the checkpoint cadence: approved spec, approved plan, verified task scopes, and final verified changes. Pushes and PR creation still require explicit user instruction.
+
 `skills/using-superpowers/SKILL.md` is the source of truth for routing details.
 
 ---

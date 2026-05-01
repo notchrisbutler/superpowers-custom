@@ -32,7 +32,7 @@ Generic worker or implementation subagent:
     1. Implement exactly what the task specifies
     2. Write tests (following TDD if task says to)
     3. Verify implementation works
-    4. Report changed files and verification results. Do not commit unless the main session explicitly says the user requested commits.
+    4. Report changed files and verification results. Do not commit; the coordinator owns task-scope commits when workflow commits are enabled.
     5. Self-review (see below)
     6. Report back
 

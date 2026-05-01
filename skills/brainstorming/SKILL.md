@@ -25,10 +25,11 @@ When this skill is selected, create a task for each of these items and complete 
 2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 3. **Propose 2-3 approaches** — with trade-offs and your recommendation
 4. **Present design** — in sections scaled to their complexity, get user approval after each section
-5. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`; commit only if the user explicitly requested commits and the destination is trackable in the current repository
+5. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
 6. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
 7. **User reviews written spec** — ask user to review the spec file before proceeding
-8. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+8. **Commit approved spec** — when workflow commits are enabled, commit the approved spec before planning
+9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
 ## Process Flow
 
@@ -42,6 +43,7 @@ digraph brainstorming {
     "Write design doc" [shape=box];
     "Spec self-review\n(fix inline)" [shape=box];
     "User reviews spec?" [shape=diamond];
+    "Commit approved spec\n(if workflow commits enabled)" [shape=box];
     "Invoke writing-plans skill" [shape=doublecircle];
 
     "Explore project context" -> "Ask clarifying questions";
@@ -53,7 +55,8 @@ digraph brainstorming {
     "Write design doc" -> "Spec self-review\n(fix inline)";
     "Spec self-review\n(fix inline)" -> "User reviews spec?";
     "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
+    "User reviews spec?" -> "Commit approved spec\n(if workflow commits enabled)" [label="approved"];
+    "Commit approved spec\n(if workflow commits enabled)" -> "Invoke writing-plans skill";
 }
 ```
 
@@ -105,9 +108,9 @@ digraph brainstorming {
 - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
-- If the user explicitly requested commits, first verify the design document path is not ignored. If it is ignored, ask the user whether to keep it local, choose a trackable path, or force-add it.
-- If the user explicitly requested commits and the path is trackable, commit the design document to git after self-review.
-- If commits were not explicitly requested, leave the design document uncommitted and report its path.
+- Do not commit the spec before user review approval. If workflow commits are enabled, commit the approved spec after the user approves it and before invoking writing-plans.
+- Before committing, verify the design document path is not ignored. If it is ignored, ask the user whether to keep it local, choose a trackable path, or force-add it.
+- If workflow commits are not enabled, leave the design document uncommitted and report its path.
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:
@@ -125,6 +128,9 @@ After the spec review loop passes, ask the user to review the written spec befor
 > "Spec written to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+
+**Spec Commit Gate:**
+After the user approves the written spec, commit it locally when workflow commits are enabled. This creates the stable baseline that writing-plans and execution can reference. Do not push unless the user explicitly requests it.
 
 **Implementation:**
 

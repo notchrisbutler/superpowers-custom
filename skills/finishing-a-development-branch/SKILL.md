@@ -9,7 +9,7 @@ description: Use when implementation is complete, tests have been verified, and 
 
 Guide completion of development work by choosing the correct local context before presenting next-step options.
 
-**Core principle:** Verify tests -> identify durable branch vs temporary worktree branch -> present local-first options -> execute choice.
+**Core principle:** Verify tests -> commit verified local work when workflow commits are enabled -> identify durable branch vs temporary worktree branch -> present local-first options -> execute choice.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -37,7 +37,13 @@ Stop. Don't proceed to Step 2.
 
 **If tests pass:** Continue to Step 2.
 
-### Step 2: Determine Completion Context
+### Step 2: Commit Verified Local Work
+
+If workflow commits are enabled and verified changes remain uncommitted, create a local commit before presenting completion options. This preserves the early-and-often workflow on feature branches and gives worktree merges a concrete commit boundary.
+
+Do not commit unrelated user changes, ignored secret files, or generated files that should stay local. If unrelated changes are mixed with completed work and cannot be safely separated, stop and ask the user how to proceed. Do not push unless the user explicitly requests it.
+
+### Step 3: Determine Completion Context
 
 Determine whether the completed work is already on the user's durable branch, or whether it lives on a temporary worktree/task branch that must be integrated somewhere else.
 
@@ -49,7 +55,7 @@ Priority order for the integration target:
 
 Do not infer main/master as the merge target just because it is the repository default branch. Only use main/master when the user explicitly instructed work to land there.
 
-### Step 3: Present Options
+### Step 4: Present Options
 
 If already on the user-directed branch and the work is locally committed, do not present the 4-option prompt, offer a local merge, or ask worktree cleanup questions. Report the branch, commit(s), and verification performed, then leave it ready for the user to push or request a PR.
 
@@ -70,13 +76,13 @@ Which option?
 
 **Don't add explanation** - keep options concise.
 
-### Step 4: Execute Choice
+### Step 5: Execute Choice
 
 #### Option 1: Merge Temporary Branch Into Parent/Source Branch
 
 Use only when finishing from a worktree or temporary task branch. Merge back into the parent/source branch the temporary branch was spawned from, unless the user explicitly selected a different local target.
 
-If finishing from a durable feature branch, do not merge anywhere. Commit locally only if the user explicitly requested a commit, and leave push/PR creation to the user unless they explicitly request it.
+If finishing from a durable feature branch, do not merge anywhere. If workflow commits are enabled and verified changes remain, commit locally before reporting readiness. Leave push/PR creation to the user unless they explicitly request it.
 
 ```bash
 # Switch to target local branch
@@ -92,11 +98,11 @@ git merge <completed-work-branch>
 git branch -d <completed-work-branch>
 ```
 
-Then: Cleanup worktree or temporary branch only if one exists (Step 5)
+Then: Cleanup worktree or temporary branch only if one exists (Step 6)
 
 #### Option 2: Prepare PR Summary and Commands
 
-Do not push automatically. Prepare the summary and exact commands for the user to run, unless the user explicitly asks you to push or repo instructions allow it.
+Do not push automatically. Prepare the summary and exact commands for the user to run, unless the user explicitly asks you to push.
 
 ```bash
 git push -u origin <feature-branch>
@@ -138,9 +144,9 @@ git checkout <base-branch>
 git branch -D <temporary-branch>
 ```
 
-Then: Cleanup worktree or temporary branch only if one exists (Step 5)
+Then: Cleanup worktree or temporary branch only if one exists (Step 6)
 
-### Step 5: Cleanup Worktrees And Temporary Branches
+### Step 6: Cleanup Worktrees And Temporary Branches
 
 **For Options 1 and 4:** clean up worktrees and completed temporary branches after verification or typed discard confirmation. Never delete the durable feature branch that the user will push or use for PR creation.
 
@@ -173,6 +179,10 @@ git worktree remove <worktree-path>
 - **Problem:** Merge broken code, create failing PR
 - **Fix:** Always verify tests before offering options
 
+**Leaving verified workflow changes uncommitted**
+- **Problem:** Feature branches lose the intended checkpoint history and worktree merges lack clean boundaries
+- **Fix:** When workflow commits are enabled, commit verified local work before completion options
+
 **Open-ended questions**
 - **Problem:** "What should I do next?" → ambiguous
 - **Fix:** Present exactly 4 structured options
@@ -200,12 +210,13 @@ git worktree remove <worktree-path>
 - Merge without verifying tests on result
 - Delete work without confirmation
 - Force-push without explicit request
-- Push without explicit request or repo instructions allowing it
+- Push without explicit request
 - Merge to main/master unless the user explicitly requested main/master as the integration target
 - Delete a durable feature branch while finalizing temporary worktree branches
 
 **Always:**
 - Verify tests before offering options
+- Commit verified local work before completion options when workflow commits are enabled
 - Identify whether work is on a durable branch or temporary worktree/task branch before presenting options
 - Present exactly 4 options when a decision is needed
 - Get typed confirmation for Option 4
@@ -214,8 +225,8 @@ git worktree remove <worktree-path>
 ## Integration
 
 **Called by:**
-- **subagent-driven-development** (Step 7) - After all tasks complete
-- **executing-plans** (Step 5) - After all batches complete
+- **subagent-driven-development** - After all tasks complete
+- **executing-plans** - After all batches complete
 
 **Pairs with:**
 - **using-git-worktrees** - Cleans up worktree created by that skill

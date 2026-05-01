@@ -188,6 +188,10 @@ When full Superpowers workflow is selected and multiple skills could apply, use 
 3. **Execution skills third** - `subagent-driven-development` or `executing-plans` after a plan exists.
 4. **Quality skills as called for** - `test-driven-development`, `verification-before-completion`, `requesting-code-review`, and related skills when requested or required by the active workflow.
 
+## Workflow Commits
+
+When the user selects the full Superpowers spec -> plan -> execution workflow, local workflow commits are enabled unless the user says not to commit. Commit locally at the approved spec, approved plan, verified task-scope, and final verified-change checkpoints. Never push unless the user explicitly requests it.
+
 ## Skill Types
 
 **Rigid once selected:** TDD, debugging, verification, and execution workflows. Follow exactly after intentional selection.

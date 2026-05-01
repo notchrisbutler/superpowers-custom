@@ -23,6 +23,8 @@ Use these checks after changing skills, agents, manifests, or harness docs. Not 
 
 See [Harness Compatibility](compatibility.md) for capability differences, fallback behavior, and smoke prompts.
 
+Full Superpowers workflow tests should treat local commits as expected checkpoints when workflow commits are enabled: approved spec, approved plan, verified task scopes, and final verified changes. Tests must still flag any push, force-push, or PR creation that happens without explicit user instruction.
+
 ## Test Structure
 
 ```

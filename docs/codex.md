@@ -35,6 +35,8 @@ multi_agent = true
 
 Do not enable SuperDuperPowers Codex hook injection until this project adds a Codex-specific hook config. Claude Code hook configuration lives under `.claude-plugin/` and uses Claude Code plugin variables.
 
+Full Superpowers spec, plan, and execution workflows may create local checkpoint commits when workflow commits are enabled. Codex approval settings still apply to commit commands, and pushes require explicit user instruction.
+
 ## Verify
 
 Full-flow prompt:

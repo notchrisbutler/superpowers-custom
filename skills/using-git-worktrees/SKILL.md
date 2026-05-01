@@ -191,11 +191,11 @@ Ready to implement auth feature
 
 ## Finalization
 
-When work in one or more worktrees is complete, stop and ask the user how to proceed before merging, committing, deleting worktrees, or pushing.
+When work in one or more worktrees is complete, stop and ask the user how to proceed before merging, deleting worktrees, pushing, or creating any non-workflow commit. Verified task-scope commits created during the selected Superpowers workflow can already exist on the worktree branch.
 
 Default recommendation:
 - Merge completed worktree branches into the parent/source feature branch they were spawned from.
-- Confirm whether to commit the parent/source feature branch locally if the merge creates new uncommitted changes.
+- Commit verified merge results locally when workflow commits are enabled; otherwise confirm before committing the parent/source feature branch if the merge creates new uncommitted changes.
 - Do not push unless the user explicitly directs you to push.
 - Do not merge to main/master unless main/master was the explicit parent/source branch or the user chooses it.
 
@@ -204,7 +204,7 @@ Question to ask:
 ```
 Worktree work is complete. How should I finalize it?
 
-1. Merge completed worktrees into their parent/source feature branch and confirm before committing
+1. Merge completed worktrees into their parent/source feature branch locally
 2. Leave worktrees and branches as-is
 3. Custom finalization
 ```
@@ -217,7 +217,7 @@ Worktree work is complete. How should I finalize it?
 - Use `.worktrees/` or a global directory without explicit override
 - Skip baseline test verification
 - Proceed with failing tests without asking
-- Merge, commit, clean up, or push worktree changes without user approval
+- Merge, clean up, push, or create non-workflow commits without user approval
 - Merge worktree branches to main/master by default instead of their parent/source branch
 - Push unless the user explicitly directs it
 

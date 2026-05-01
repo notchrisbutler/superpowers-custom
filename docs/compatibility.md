@@ -27,6 +27,7 @@ The intended product path is marketplace or harness plugin/extension installatio
 - If hooks or bootstrap injection are unavailable, invoke `using-superpowers` manually or rely on context-file bootstrap.
 - If a marketplace or repo install is stale, update through the harness-specific marketplace or repo-ref command.
 - If a tool name is unsupported, consult `skills/using-superpowers/references/` for harness mappings.
+- Full Superpowers spec, plan, and execution workflows use local commits as checkpoint boundaries when workflow commits are enabled. Harnesses may require approval before commit commands run. Pushes always require explicit user instruction.
 
 ## Smoke Prompt Set
 

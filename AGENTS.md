@@ -30,7 +30,7 @@ Skills shape agent behavior. Edit them carefully.
 - Put harness-specific tool translations in adapter docs or `skills/using-superpowers/references/`.
 - Test changed skills with realistic prompts when practical.
 - Do not add browser-server requirements unless needed by an explicitly supported harness.
-- Do not instruct agents to commit changes unless the user explicitly requested a commit.
+- Do not instruct agents to commit changes unless the user explicitly requested commits or selected a Superpowers workflow that documents local workflow commits at spec, plan, or task-scope checkpoints. Never push without an explicit user request.
 
 ## Agent Changes
 

@@ -5,7 +5,7 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute implementation plans with subagents while keeping harness todos flat and using proportional review at meaningful task boundaries.
+Execute implementation plans with subagents while keeping harness todos flat, using proportional review at meaningful task boundaries, and committing locally at verified task-scope boundaries when workflow commits are enabled.
 
 If the active harness does not support subagents or worker dispatch, use `executing-plans` in the main session and preserve the same flat task labels and review checkpoints.
 
@@ -47,8 +47,10 @@ digraph when_to_use {
 4. Execute each flat todo in dependency order.
 5. Run lite checkpoints for simple task todos.
 6. Run full task-scope spec review and lite task-scope code review at task boundaries.
-7. Run final full implementation review and validation across all tasks.
-8. Invoke `superpowers:finishing-a-development-branch`, preserving whether execution happened on the current branch or in a temporary worktree/task branch.
+7. Commit the verified parent task scope locally when workflow commits are enabled.
+8. Run final full implementation review and validation across all tasks.
+9. Commit verified remaining changes locally when workflow commits are enabled.
+10. Invoke `superpowers:finishing-a-development-branch`, preserving whether execution happened on the current branch or in a temporary worktree/task branch.
 
 ## Todo Status Discipline
 
@@ -77,6 +79,7 @@ Most harnesses do not support nested todos. Preserve conceptual groups with pare
 - Final: full task-set spec review
 - Final: full task-set code review
 - Final: unit/e2e validation
+- Final: commit verified remaining changes if workflow commits are enabled
 - Finalize: complete on current branch or prompt for worktree merge/cleanup choice
 ```
 
@@ -96,6 +99,12 @@ Use the cheapest review that matches the risk:
 High-risk means security, auth, data loss, migrations, broad refactors, cross-cutting behavior, unresolved design judgment, or unexpected file changes.
 
 If a lite review finds a concern, escalate that task scope to full spec and/or full code review before moving on.
+
+## Commit Cadence
+
+When workflow commits are enabled, the coordinator commits locally after each parent task scope passes its required reviews and validation. This is the normal feature-branch cadence: small, reviewable commits for each verified task scope, then a final commit for any verified remaining changes.
+
+Implementer subagents do not commit directly. They report changed files and verification results; the coordinator reviews the aggregate diff, writes the commit message, and commits only after the task boundary is clean. In worktree or temporary task-branch execution, keep commits on that branch and let finishing-a-development-branch handle integration back to the parent/source branch. Do not push unless the user explicitly requests it.
 
 ## Reviewer Routing
 
@@ -187,6 +196,7 @@ Finalize: invoke finishing-a-development-branch
 - Ignore subagent questions
 - Let implementer self-review replace required task-scope or final review
 - Move past a task scope while required review has open issues
+- Let implementer subagents create their own commits instead of coordinator-owned task-scope commits
 
 **If reviewer finds issues:**
 - Implementer or fix subagent fixes them
