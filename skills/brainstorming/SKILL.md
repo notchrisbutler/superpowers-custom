@@ -135,7 +135,7 @@ After the user approves the written spec, commit it locally when workflow commit
 **Implementation:**
 
 - Invoke the writing-plans skill to create a detailed implementation plan
-- When execution begins, replace brainstorming todos with the executor's flat, dependency-ordered task list. Preserve conceptual groups with labels like `Task 1.1`, `Task 1: Full spec review`, and `Task 1: Lite code review`; do not create nested todos.
+- When execution begins, replace brainstorming todos with the executor's compact, dependency-ordered task list. Preserve detailed `Task N.M` subtasks in the plan/spec, but use visible harness todos like `Task 0: Execution setup`, `Task 1: <goal>`, `Review`, and `Finalize`; do not create nested or overly expanded todos.
 - Do NOT invoke any other skill. writing-plans is the next step.
 
 ## Key Principles

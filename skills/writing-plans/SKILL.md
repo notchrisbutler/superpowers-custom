@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase or local conventions. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered tasks. DRY. YAGNI. TDD. Include local commit steps at the approved plan and task-scope boundaries when workflow commits are enabled.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase or local conventions. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered task scopes with detailed subtasks. DRY. YAGNI. TDD. Include local commit steps at the approved plan and task-scope boundaries when workflow commits are enabled.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -36,16 +36,37 @@ This structure informs the task decomposition. Each task should produce self-con
 
 ## Grouped Task Granularity
 
-Plan in parent task scopes that share one useful validation boundary. Keep harness task lists flat by encoding scope membership in labels, not nesting.
+Plan in parent task scopes that share one useful validation boundary. Keep detailed execution steps in the plan, but keep harness todo lists compact by showing only the parent task scopes and final orchestration steps.
 
 **Each task should be small enough to execute safely, but not so small that it forces a cold-start review loop for mechanical work:**
 - Good task scope: `Task 1: Login Flow` with test, implementation, and validation subtasks
 - Good task: `Task 1.1: Write failing login validation tests`
 - Good lite checkpoint: `Task 1.1: Lite review checkpoint` using lite spec/code reviewers as needed
 - Good task-scope review: `Task 1: Full spec review` and `Task 1: Lite code review`
-- Bad default: full spec review and full code review after every tiny task
+- Good harness todo: `Task 1: Login Flow - execute Task 1.1-1.N, review, validate, commit if enabled`
+- Bad harness todo default: separate visible todos for every `Task N.M`, lite checkpoint, and review command
+- Bad review default: full spec review and full code review after every tiny task
 
 Use task-level full review only for high-risk, ambiguous, or cross-cutting work.
+
+## Harness Todo Shape
+
+Plan documents may contain detailed `Task N.M` subtasks. Harness todo lists should stay readable and flat by folding those details into one visible todo per parent task scope:
+
+```markdown
+- Task 0: Execution setup - read plan, classify task scopes, prepare context
+- Task 1: <parent task goal> - execute Task 1.1-1.N, review, validate, commit if enabled
+- Task 2: <parent task goal> - execute Task 2.1-2.N, review, validate, commit if enabled
+- Review: final full-scope spec review, code review, and validation
+- Finalize: finish branch according to current execution mode
+```
+
+Each visible `Task N` todo includes all plan-defined subtasks, lite checkpoints, task-scope reviews, validation commands, and task-scope commit steps for that parent scope. Only split a `Task N.M` into its own harness todo when it is a real dependency boundary, high-risk checkpoint, or blocker-resolution step that must be tracked separately.
+
+`Finalize` means:
+- In a worktree or temporary task branch, integrate back into the parent/source feature branch and clean up according to `finishing-a-development-branch`.
+- On the current branch, ensure verified changes are committed locally and the feature branch is ready for PR.
+- Never push unless the user explicitly requests it.
 
 ## Plan Document Header
 
@@ -54,7 +75,7 @@ Use task-level full review only for high-risk, ambiguous, or cross-cutting work.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan in flat, dependency-ordered task groups. Steps use checkbox (`- [ ]`) syntax for tracking; harness todos must remain flat.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan in dependency-ordered parent task scopes. Steps use checkbox (`- [ ]`) syntax for plan tracking; harness todos should stay compact with one visible todo per parent `Task N` scope plus `Review` and `Finalize`.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -131,7 +152,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
 - DRY, YAGNI, TDD, and local commits at approved plan and task-scope boundaries when workflow commits are enabled
-- Conceptual groups are allowed in plan docs; harness todos must be flat and ordered by dependency
+- Conceptual groups and `Task N.M` subtasks belong in plan docs; harness todos should be compact, flat, and ordered by parent task dependency
 - Include an explicit review policy per group
 
 ## Self-Review
@@ -144,7 +165,7 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-**4. Execution shape:** Does the plan create flat, dependency-ordered todos with labels like `Task 1.1: <task name>`, `Task 1.1: Lite review checkpoint`, `Task 1: Full spec review`, and `Task 1: Lite code review`? If the plan implies nested todos or mandatory full reviews after every tiny task, fix it.
+**4. Execution shape:** Does the plan support compact, dependency-ordered harness todos with labels like `Task 0: Execution setup`, `Task 1: <goal> - execute Task 1.1-1.N, review, validate, commit if enabled`, `Review: final full-scope spec review, code review, and validation`, and `Finalize: finish branch according to current execution mode`? If the plan requires visible todos for every subtask, lite checkpoint, or tiny review, fix it.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
@@ -164,16 +185,16 @@ After the user approves the plan and the plan commit gate is handled, offer exec
 
 **"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
 
-**1. Subagent-Driven (recommended)** - I execute flat task scopes with lite task checkpoints, full task-scope spec reviews, lite task-scope code reviews, and final full reviews
+**1. Subagent-Driven (recommended)** - I execute compact parent task scopes with plan-defined subtasks, lite task checkpoints, task-scope reviews, and final full reviews
 
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
+**2. Inline Execution** - Execute compact parent task scopes in this session using executing-plans, with plan-defined subtasks and checkpoints
 
 **Which approach?"**
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Flat, dependency-ordered harness todo list with `Task N` / `Task N.M` labels and review checkpoints
+- Compact, dependency-ordered harness todo list with parent `Task N` scopes, `Review`, and `Finalize`
 
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
-- Flat, dependency-ordered harness todo list with `Task N` / `Task N.M` labels and review checkpoints
+- Compact, dependency-ordered harness todo list with parent `Task N` scopes, `Review`, and `Finalize`
