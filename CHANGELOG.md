@@ -2,26 +2,44 @@
 
 ## 2026.4.30
 
-Initial alpha release of SuperDuperPowers.
+Initial release of SuperDuperPowers.
 
-- Reworked Superpowers bootstrap routing around three outcomes: full flow, quick flow, or no Superpowers unless invoked later
-- Added quick flow guidance for bounded work: focused context gathering, small changes, targeted validation, and surface-level review without full brainstorming/TDD ceremony
-- Narrowed brainstorming, TDD, and systematic debugging activation so ordinary quick tasks do not automatically trigger heavy workflows
-- Added named `spec-reviewer`, `code-reviewer`, `lite-spec-reviewer`, and `lite-code-reviewer` review routing so grouped execution can route full reviews and lightweight checkpoints explicitly
-- Reworked planning and execution skills around flat, dependency-ordered task lists with group labels instead of nested todos
-- Updated subagent-driven development to use lite task checkpoints, full group reviews, and final task-set reviews instead of mandatory full review loops after every tiny task
-- Updated finishing guidance to keep push local-first: prepare PR commands unless the user explicitly asks the agent to push
-- Documented public GitHub `main` branch installation, including `opencode.json` setup for OpenCode before tagged releases exist
-- Renamed active release history from `RELEASE-NOTES.md` to `CHANGELOG.md`
-- Refreshed packaging metadata around the included OpenCode plugin config while keeping the workflow sources harness-agnostic
-- Added OpenCode install and verification documentation while keeping other harness configs deferred until future focused rebuilds
-- Preserved non-included harness context in future planning docs instead of shipping unverified active config surfaces
-- Removed inactive hook wrapper guidance and non-OpenCode adapter files from the active package surface
-- Clarified development finalization workflows so current-branch execution stays locally committed while worktree branches merge back only to their parent/source branch
-- Registered bundled reviewer agents in the OpenCode plugin so execution workflows can dispatch `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer` as named subagents
-- Refined full-workflow execution todos to use `Task N` / `Task N.M` labels, full task-scope spec reviews, lite task-scope code reviews, and final full task-set reviews
-- Added root `AGENTS.md` as canonical contributor guidance for harness-agnostic workflow sources and the included OpenCode config
-- Deferred broader harness compatibility documentation until additional harness configs are rebuilt and validated
-- Clarified marketplace/plugin-repository installation as the primary product path and removed global npm CLI installation framing
-- Made workflow commit behavior conditional on explicit user request and aligned integration docs/tests around changed-file reporting instead of automatic commits
-- Aligned reviewer-agent fallback prompts with the canonical reviewer definitions and made skill wording more marketplace-appropriate
+### What Changed From Original Superpowers
+
+- Reworked the bootstrap behavior so Superpowers is opt-in by default instead of treating every task as a full workflow.
+- Added three clear routing outcomes: full Superpowers flow, quick Superpowers flow, or ordinary agent behavior with no Superpowers unless invoked later.
+- Added quick-flow guidance for bounded work: gather enough context, make the smallest correct change, run targeted validation, and report results without forcing brainstorming, TDD, or full planning ceremony.
+- Narrowed automatic activation of brainstorming, TDD, systematic debugging, and other heavy workflows so small edits and ordinary reviews stay lightweight.
+- Refined planning and execution guidance around flat, dependency-ordered task groups instead of deeply nested todos.
+- Updated subagent-driven development to use lightweight checkpoints for small tasks, full reviews at meaningful task boundaries, and final task-set reviews when the work is complete.
+- Made agent commit and push behavior more conservative: commits require an explicit user request or a workflow that clearly calls for them, and pushes require explicit user approval.
+
+### Skills And Reviewers
+
+- Added bundled reviewer agents for `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer`.
+- Aligned reviewer-agent fallback prompts with the canonical `agents/` definitions.
+- Updated skill wording to be more direct, harness-neutral, and marketplace-appropriate.
+- Added root `AGENTS.md` contributor guidance for maintaining harness-agnostic workflow sources and the included OpenCode adapter.
+
+### OpenCode Initial Package
+
+- Slimmed the active package surface down to OpenCode support for this alpha release.
+- Added the OpenCode plugin adapter, reviewer-agent registration, install instructions, and verification guidance.
+- Documented installation from the public GitHub `main` branch while tagged releases and registry distribution are still being established.
+- Refreshed package metadata around marketplace/plugin-repository installation and removed unsupported global npm CLI installation framing.
+- Removed inactive hook-wrapper guidance and non-OpenCode adapter files from the active package surface.
+- Preserved broader harness context as future planning material instead of shipping unverified active configs.
+
+### Release And Maintenance
+
+- Renamed active release history from `RELEASE-NOTES.md` to `CHANGELOG.md`.
+- Clarified development finalization workflows for local branches and worktrees.
+- Added packaging guidance that keeps `skills/` and `agents/` as the canonical workflow sources.
+
+### Future Plans
+
+- Lock down the OpenCode initial setup first: validate installation, reviewer registration, skill routing, and marketplace/plugin-repository behavior.
+- Revisit Claude Code support with a focused adapter pass instead of carrying forward stale hook or wrapper assumptions.
+- Explore Codex support once the OpenCode workflow surface is stable and the required tool mappings are clear.
+- Explore Cursor hooks, plugins, or setup guidance after the core workflow model has settled.
+- Keep future harness integrations thin: each adapter should wrap the canonical `skills/` and `agents/` sources rather than forking workflow content.
