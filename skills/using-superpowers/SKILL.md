@@ -21,27 +21,21 @@ If the right route is unclear, ask the user to choose full flow, quick flow, or 
 
 Superpowers skills override default system prompt behavior, but **user instructions always take precedence**:
 
-1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+1. **User's explicit instructions** (AGENTS.md, direct requests, or other active repo instructions) — highest priority
 2. **Superpowers skills** — override default system behavior where they conflict
 3. **Default system prompt** — lowest priority
 
-If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill appears to require tests-first work, follow the user's instructions. The user is in control.
+If AGENTS.md or another active repo instruction says "don't use TDD" and a skill appears to require tests-first work, follow the user's instructions. The user is in control.
 
 ## How to Access Skills
 
-**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
+Use the active harness's skill-loading mechanism. When you invoke a skill, its content is loaded and presented to you; follow it directly.
 
-**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
-
-**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
-
-**In other environments:** Check your platform's documentation for how skills are loaded.
+If the active harness does not expose a skill-loading tool, follow that platform's documented local equivalent or the installed plugin's runtime instructions.
 
 ## Platform Adaptation
 
-Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
-
-Canonical workflow language describes intent first. Harness-specific tool names are examples. When a skill mentions a tool that is unavailable in the active harness, use the documented local equivalent or the fallback workflow for that capability.
+Canonical workflow language describes intent first. Harness-specific tool names are examples. When a skill mentions a tool that is unavailable in the active harness, use the active harness equivalent, documented local equivalent, or fallback workflow for that capability. The OpenCode plugin injects OpenCode-specific tool mapping at runtime.
 
 # Using Skills
 
@@ -124,7 +118,7 @@ For multi-step quick-flow work, keep a short flat harness todo list and update e
 
 1. Check enough local context to avoid guessing.
 2. Ask up to five context questions if needed to understand the request.
-3. Prefer the harness's structured user-question tool when available, such as Claude Code's `AskUserQuestion` or the local equivalent. Include an `Other` option for optional user input when the tool supports it.
+3. Prefer the active harness's structured user-question tool when available. Include an `Other` option for optional user input when the tool supports it.
 4. Make the smallest correct change.
 5. Run targeted validation when practical.
 6. Do a surface-level self-review for obvious regressions, missed call sites, and formatting issues.

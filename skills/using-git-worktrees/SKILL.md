@@ -9,7 +9,7 @@ description: Use when starting feature work that needs isolation from current wo
 
 Git worktrees create isolated workspaces sharing the same repository, allowing work on multiple branches simultaneously without switching.
 
-**Core principle:** Project-local OpenCode worktrees + ignore safety + explicit finalization approval = reliable isolation.
+**Core principle:** Project-local worktrees + ignore safety + explicit finalization approval = reliable isolation.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
 
@@ -19,7 +19,7 @@ Follow this priority order:
 
 ### 1. Default Location
 
-Default to `{project root}/.opencode/worktrees/`.
+Default to the repository's configured project-local worktree root. If no project convention exists, use a project-local ignored directory chosen for the active task.
 
 Use this location unless the user explicitly directs a different worktree directory or a repo instruction requires another location.
 
@@ -36,7 +36,7 @@ Ask the user only if repo instructions conflict or the directed location is unsa
 ```
 Worktree location is unclear. Where should I create worktrees?
 
-1. .opencode/worktrees/ (project-local default)
+1. <repo-configured worktree root> (project-local default)
 2. <repo-directed location>
 3. Custom path
 
@@ -47,18 +47,18 @@ Which would you prefer?
 
 ### Ignore Rules Before Creation
 
-Before creating any worktree directory, ensure the chosen worktree root is ignored by git and explicitly allowed through `.ignore` for OpenCode visibility.
+Before creating any worktree directory, ensure the chosen worktree root is ignored by git and allowed through the active harness's ignore file when needed for workspace visibility.
 
-For the default location, add these before creating `.opencode/worktrees/`:
+For the selected project-local worktree root, add matching ignore rules before creating it:
 
 `.gitignore`:
 ```gitignore
-.opencode/worktrees/
+<worktree-root>/
 ```
 
 `.ignore`:
 ```gitignore
-!.opencode/worktrees/
+!<worktree-root>/
 ```
 
 If the user overrides the worktree location, add that directed worktree root to `.gitignore` and add a matching negated `!` entry to `.ignore` before creation.
@@ -86,7 +86,7 @@ project=$(basename "$repo_root")
 
 ```bash
 parent_branch=$(git branch --show-current)
-path="$repo_root/.opencode/worktrees/$BRANCH_NAME"
+path="$repo_root/<worktree-root>/$BRANCH_NAME"
 
 # Create worktree with new branch
 git worktree add "$path" -b "$BRANCH_NAME"
@@ -143,10 +143,10 @@ Ready to implement <feature-name>
 
 | Situation | Action |
 |-----------|--------|
-| No override | Use `.opencode/worktrees/` |
+| No override | Use the repo-configured project-local worktree root |
 | User/repo overrides location | Use override after ignore safety |
 | Directory not ignored | Add to `.gitignore` before creation |
-| Missing OpenCode allow rule | Add matching `!` entry to `.ignore` |
+| Missing harness allow rule | Add matching `!` entry to the active harness ignore file |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
@@ -159,8 +159,8 @@ Ready to implement <feature-name>
 
 ### Using the old default
 
-- **Problem:** `.worktrees/` or global worktrees hide OpenCode context and drift from repo-local defaults
-- **Fix:** Use `.opencode/worktrees/` unless the user or repo explicitly overrides it
+- **Problem:** `.worktrees/` or global worktrees can hide harness context and drift from repo-local defaults
+- **Fix:** Use the repo-configured project-local worktree root unless the user or repo explicitly overrides it
 
 ### Proceeding with failing tests
 
@@ -177,14 +177,14 @@ Ready to implement <feature-name>
 ```
 You: I'm using the using-git-worktrees skill to set up an isolated workspace.
 
-[Add `.opencode/worktrees/` to .gitignore before creating the directory]
-[Add `!.opencode/worktrees/` to .ignore]
-[Verify ignored - git check-ignore confirms .opencode/worktrees/ is ignored]
-[Create worktree: git worktree add .opencode/worktrees/auth -b feature/auth]
+[Add the selected worktree root to .gitignore before creating the directory]
+[Add a matching allow rule to the active harness ignore file when needed]
+[Verify ignored - git check-ignore confirms the selected root is ignored]
+[Create worktree: git worktree add <worktree-root>/auth -b feature/auth]
 [Run npm install]
 [Run npm test - 47 passing]
 
-Worktree ready at /Users/jesse/myproject/.opencode/worktrees/auth
+Worktree ready at /Users/jesse/myproject/<worktree-root>/auth
 Tests passing (47 tests, 0 failures)
 Ready to implement auth feature
 ```
@@ -213,7 +213,7 @@ Worktree work is complete. How should I finalize it?
 
 **Never:**
 - Create worktree without verifying it's ignored (project-local)
-- Create `.opencode/worktrees/` before adding ignore rules
+- Create the selected worktree root before adding ignore rules
 - Use `.worktrees/` or a global directory without explicit override
 - Skip baseline test verification
 - Proceed with failing tests without asking
@@ -222,8 +222,8 @@ Worktree work is complete. How should I finalize it?
 - Push unless the user explicitly directs it
 
 **Always:**
-- Default to `.opencode/worktrees/`
-- Add `.gitignore` and `.ignore` entries before creation
+- Default to the repo-configured project-local worktree root
+- Add `.gitignore` and active harness ignore entries before creation when needed
 - Verify directory is ignored
 - Auto-detect and run project setup
 - Verify clean test baseline
