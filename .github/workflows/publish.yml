@@ -3,26 +3,32 @@ name: Publish package
 on:
   workflow_dispatch:
     inputs:
+      version:
+        description: "Version to publish, without leading v, for example YYYY.M.D"
+        required: true
+        type: string
       dist_tag:
         description: "npm dist-tag to update"
         required: true
         default: "latest"
-        type: string
+        type: choice
+        options:
+          - latest
+          - prerelease
       mode:
-        description: "Use dry-run until npm Trusted Publishing is configured"
+        description: "Use dry-run to validate without publishing"
         required: true
         default: "dry-run"
         type: choice
         options:
           - dry-run
           - publish
-
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 concurrency:
-  group: npm-publish
+  group: npm-publish-${{ inputs.version }}
   cancel-in-progress: false
 
 jobs:
@@ -40,9 +46,38 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
-      - name: Read and validate package version
+      - name: Resolve release metadata
         env:
-          DIST_TAG: ${{ inputs.dist_tag }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_DIST_TAG: ${{ inputs.dist_tag }}
+          INPUT_MODE: ${{ inputs.mode }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import process from 'node:process';
+
+          const env = process.env;
+          const version = env.INPUT_VERSION;
+          const distTag = env.INPUT_DIST_TAG;
+          const mode = env.INPUT_MODE;
+
+          if (!/^\d+\.\d+\.\d+(?:-[1-9]\d*)?$/.test(version)) {
+            throw new Error(`Version must be YYYY.M.D or YYYY.M.D-N: ${version}`);
+          }
+          if (!['latest', 'prerelease'].includes(distTag)) {
+            throw new Error(`Unsupported npm dist-tag: ${distTag}`);
+          }
+          if (!['dry-run', 'publish'].includes(mode)) {
+            throw new Error(`Unsupported mode: ${mode}`);
+          }
+
+          fs.appendFileSync(env.GITHUB_ENV, `VERSION=${version}\nDIST_TAG=${distTag}\nMODE=${mode}\n`);
+          console.log(`version=${version}`);
+          console.log(`dist_tag=${distTag}`);
+          console.log(`mode=${mode}`);
+          NODE
+
+      - name: Validate package metadata
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -55,47 +90,22 @@ jobs:
           if (pkg.private) {
             throw new Error('package.json must not be private for npm publishing');
           }
-          if (!/^\d+\.\d+\.\d+(?:-[1-9]\d*)?$/.test(pkg.version)) {
-            throw new Error(`Version must be YYYY.M.D or YYYY.M.D-N: ${pkg.version}`);
+          if (pkg.repository?.url !== 'https://github.com/notchrisbutler/superduperpowers') {
+            throw new Error(`Unexpected repository.url: ${pkg.repository?.url}`);
           }
-          if (!/^[A-Za-z0-9._-]+$/.test(process.env.DIST_TAG)) {
-            throw new Error(`Dist-tag contains unsupported characters: ${process.env.DIST_TAG}`);
+          if (pkg.version !== process.env.VERSION) {
+            throw new Error(`package.json version ${pkg.version} does not match release version ${process.env.VERSION}`);
           }
-          fs.appendFileSync(process.env.GITHUB_ENV, `VERSION=${pkg.version}\n`);
           NODE
 
-      - name: Check release tag does not exist
-        run: |
-          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
-            echo "Tag v${VERSION} already exists locally" >&2
-            exit 1
-          fi
-          if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" >/dev/null 2>&1; then
-            echo "Tag v${VERSION} already exists on origin" >&2
-            exit 1
-          fi
-
-      - name: Check package contents
-        run: npm pack --dry-run
+      - name: Dry run npm publish
+        run: npm publish --access public --provenance --tag "$DIST_TAG" --dry-run
 
       - name: Stop after dry run
-        if: ${{ inputs.mode == 'dry-run' }}
+        if: ${{ env.MODE == 'dry-run' }}
         run: |
-          echo "Dry run complete. Re-run with mode=publish after npm Trusted Publishing is configured."
-
-      - name: Create local release tag
-        if: ${{ inputs.mode == 'publish' }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "v${VERSION}"
+          echo "npm publish dry run passed for v${VERSION} with npm dist-tag ${DIST_TAG}."
 
       - name: Publish to npm
-        if: ${{ inputs.mode == 'publish' }}
-        env:
-          DIST_TAG: ${{ inputs.dist_tag }}
+        if: ${{ env.MODE == 'publish' }}
         run: npm publish --access public --provenance --tag "$DIST_TAG"
-
-      - name: Push release tag
-        if: ${{ inputs.mode == 'publish' }}
-        run: git push origin "v${VERSION}"
