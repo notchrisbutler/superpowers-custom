@@ -13,14 +13,15 @@ export HOME="$TEST_HOME"
 export XDG_CONFIG_HOME="$TEST_HOME/.config"
 export OPENCODE_CONFIG_DIR="$TEST_HOME/.config/opencode"
 
-# Standard install layout:
-#   $OPENCODE_CONFIG_DIR/superpowers/             ← package root
-#   $OPENCODE_CONFIG_DIR/superpowers/skills/      ← skills dir (../../skills from plugin)
-#   $OPENCODE_CONFIG_DIR/superpowers/agents/      ← bundled named subagents
-#   $OPENCODE_CONFIG_DIR/superpowers/.opencode/plugins/superpowers.js ← plugin file
-#   $OPENCODE_CONFIG_DIR/plugins/superpowers.js   ← symlink OpenCode reads
+# Package-style test layout:
+#   $OPENCODE_CONFIG_DIR/superduperpowers/             ← package root
+#   $OPENCODE_CONFIG_DIR/superduperpowers/package.json ← package metadata with main entrypoint
+#   $OPENCODE_CONFIG_DIR/superduperpowers/skills/      ← skills dir (../../skills from plugin)
+#   $OPENCODE_CONFIG_DIR/superduperpowers/agents/      ← bundled named subagents
+#   $OPENCODE_CONFIG_DIR/superduperpowers/.opencode/plugins/superpowers.js ← plugin file
+#   $OPENCODE_CONFIG_DIR/plugins/superpowers.js        ← local-plugin shim for integration tests
 
-SUPERPOWERS_DIR="$OPENCODE_CONFIG_DIR/superpowers"
+SUPERPOWERS_DIR="$OPENCODE_CONFIG_DIR/superduperpowers"
 SUPERPOWERS_SKILLS_DIR="$SUPERPOWERS_DIR/skills"
 SUPERPOWERS_PLUGIN_FILE="$SUPERPOWERS_DIR/.opencode/plugins/superpowers.js"
 
@@ -28,6 +29,7 @@ SUPERPOWERS_PLUGIN_FILE="$SUPERPOWERS_DIR/.opencode/plugins/superpowers.js"
 mkdir -p "$SUPERPOWERS_DIR"
 cp -r "$REPO_ROOT/skills" "$SUPERPOWERS_DIR/"
 cp -r "$REPO_ROOT/agents" "$SUPERPOWERS_DIR/"
+cp "$REPO_ROOT/package.json" "$SUPERPOWERS_DIR/package.json"
 
 # Install plugin
 mkdir -p "$(dirname "$SUPERPOWERS_PLUGIN_FILE")"

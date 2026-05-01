@@ -14,18 +14,25 @@ source "$SCRIPT_DIR/setup.sh"
 trap cleanup_test_env EXIT
 
 plugin_link="$OPENCODE_CONFIG_DIR/plugins/superpowers.js"
+package_json="$SUPERPOWERS_DIR/package.json"
 
-# Test 1: Verify plugin file exists and is registered
-echo "Test 1: Checking plugin registration..."
-if [ -L "$plugin_link" ]; then
-    echo "  [PASS] Plugin symlink exists"
+# Test 1: Verify package metadata and local plugin shim exist
+echo "Test 1: Checking package metadata and plugin shim..."
+if [ -f "$package_json" ]; then
+    echo "  [PASS] Package metadata exists"
 else
-    echo "  [FAIL] Plugin symlink not found at $plugin_link"
+    echo "  [FAIL] Package metadata not found at $package_json"
+    exit 1
+fi
+if [ -L "$plugin_link" ]; then
+    echo "  [PASS] Local plugin shim exists"
+else
+    echo "  [FAIL] Local plugin shim not found at $plugin_link"
     exit 1
 fi
 
-# Verify symlink target exists
-if [ -f "$(readlink -f "$plugin_link")" ]; then
+# Verify symlink target exists. -f follows symlinks and is portable to macOS.
+if [ -f "$plugin_link" ]; then
     echo "  [PASS] Plugin symlink target exists"
 else
     echo "  [FAIL] Plugin symlink target does not exist"
@@ -51,14 +58,33 @@ else
     exit 1
 fi
 
-# Test 4: Verify plugin JavaScript syntax (basic check)
-echo "Test 4: Checking plugin JavaScript syntax..."
+# Test 4: Verify package main import and plugin JavaScript syntax
+echo "Test 4: Checking package main import and plugin JavaScript syntax..."
 if node --check "$SUPERPOWERS_PLUGIN_FILE" 2>/dev/null; then
     echo "  [PASS] Plugin JavaScript syntax is valid"
 else
     echo "  [FAIL] Plugin has JavaScript syntax errors"
     exit 1
 fi
+package_output=$(node --input-type=module <<'NODE'
+import fs from 'fs';
+import path from 'path';
+
+const packagePath = path.join(process.env.SUPERPOWERS_DIR, 'package.json');
+const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+if (pkg.name !== 'superduperpowers') throw new Error(`unexpected package name ${pkg.name}`);
+if (pkg.main !== '.opencode/plugins/superpowers.js') throw new Error(`unexpected main ${pkg.main}`);
+const mod = await import(path.join(process.env.SUPERPOWERS_DIR, pkg.main));
+if (!mod.SuperpowersPlugin) throw new Error('missing SuperpowersPlugin export');
+const hooks = await mod.SuperpowersPlugin({});
+if (typeof hooks.config !== 'function') throw new Error('missing config hook');
+console.log(`${pkg.name} main import and hook ok`);
+NODE
+) || {
+    echo "  [FAIL] Package main import failed"
+    exit 1
+}
+echo "  [PASS] $package_output"
 
 # Test 5: Verify bundled reviewer agents are installed
 echo "Test 5: Checking bundled reviewer agents..."
@@ -73,11 +99,22 @@ echo "  [PASS] Bundled reviewer agents exist"
 # Test 6: Verify plugin registers named reviewer agents in OpenCode config
 echo "Test 6: Checking named reviewer agent registration..."
 agent_output=$(node --input-type=module <<'NODE'
-const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
+import fs from 'fs';
+import path from 'path';
 
+const packagePath = path.join(process.env.SUPERPOWERS_DIR, 'package.json');
+const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+const { SuperpowersPlugin } = await import(path.join(process.env.SUPERPOWERS_DIR, pkg.main));
 const hooks = await SuperpowersPlugin({});
 const config = {};
 await hooks.config(config);
+await hooks.config(config);
+
+const skillPaths = config.skills?.paths || [];
+if (skillPaths.length !== new Set(skillPaths).size) throw new Error('duplicate skill paths registered');
+const expectedSkillsPath = fs.realpathSync(process.env.SUPERPOWERS_SKILLS_DIR);
+const bundledSkillPathCount = skillPaths.filter((entry) => fs.realpathSync(entry) === expectedSkillsPath).length;
+if (bundledSkillPathCount !== 1) throw new Error(`expected one bundled skills path, got ${bundledSkillPathCount}`);
 
 for (const name of ['code-reviewer', 'spec-reviewer', 'lite-code-reviewer', 'lite-spec-reviewer']) {
   const agent = config.agent?.[name];
@@ -86,6 +123,7 @@ for (const name of ['code-reviewer', 'spec-reviewer', 'lite-code-reviewer', 'lit
   if (!agent.description) throw new Error(`${name} is missing description`);
   if (!agent.prompt) throw new Error(`${name} is missing prompt`);
   if (agent.permission?.edit !== 'deny') throw new Error(`${name} can edit files`);
+  if (agent.permission?.todowrite !== 'deny') throw new Error(`${name} can mutate todos`);
 }
 
 console.log(Object.keys(config.agent).sort().join('\n'));
@@ -94,15 +132,28 @@ NODE
     echo "  [FAIL] Plugin did not register named reviewer agents"
     exit 1
 }
-if echo "$agent_output" | grep -q "code-reviewer" && echo "$agent_output" | grep -q "spec-reviewer"; then
+if grep -q "code-reviewer" <<< "$agent_output" && grep -q "spec-reviewer" <<< "$agent_output"; then
     echo "  [PASS] Named reviewer agents registered"
 else
     echo "  [FAIL] Expected reviewer agents not found in config"
     exit 1
 fi
 
-# Test 7: Verify bootstrap text does not reference a hardcoded skills path
-echo "Test 7: Checking bootstrap does not advertise a wrong skills path..."
+# Test 7: Verify existing user-defined agents are preserved
+echo "Test 7: Checking user-defined agent preservation..."
+node --input-type=module <<'NODE'
+const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
+const hooks = await SuperpowersPlugin({});
+const existing = { description: 'User reviewer', mode: 'subagent', prompt: 'User-defined prompt' };
+const config = { agent: { 'code-reviewer': existing } };
+await hooks.config(config);
+if (config.agent['code-reviewer'] !== existing) throw new Error('user-defined code-reviewer was overwritten');
+console.log('user-defined agent preserved');
+NODE
+echo "  [PASS] User-defined agent preserved"
+
+# Test 8: Verify bootstrap text does not reference a hardcoded skills path
+echo "Test 8: Checking bootstrap does not advertise a wrong skills path..."
 if grep -q 'configDir}/skills/superpowers/' "$SUPERPOWERS_PLUGIN_FILE"; then
     echo "  [FAIL] Plugin still references old configDir skills path"
     exit 1
@@ -110,8 +161,31 @@ else
     echo "  [PASS] Plugin does not advertise a misleading skills path"
 fi
 
-# Test 8: Verify personal test skill was created
-echo "Test 8: Checking test fixtures..."
+# Test 9: Verify bootstrap transform injects once
+echo "Test 9: Checking bootstrap transform injection..."
+node --input-type=module <<'NODE'
+const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
+const hooks = await SuperpowersPlugin({});
+const output = {
+  messages: [{
+    info: { role: 'user' },
+    parts: [{ type: 'text', text: 'hello' }]
+  }]
+};
+await hooks['experimental.chat.messages.transform']({}, output);
+await hooks['experimental.chat.messages.transform']({}, output);
+const firstPart = output.messages[0].parts[0];
+if (!firstPart.text.startsWith('<EXTREMELY_IMPORTANT>\nYou have superpowers.')) throw new Error('bootstrap was not prepended');
+if (output.messages[0].parts[1]?.text !== 'hello') throw new Error('original user text was not preserved after bootstrap');
+const text = output.messages[0].parts.map(part => part.text || '').join('\n');
+const count = (text.match(/You have superpowers\./g) || []).length;
+if (count !== 1) throw new Error(`expected one bootstrap injection, got ${count}`);
+console.log('bootstrap injected once');
+NODE
+echo "  [PASS] Bootstrap transform injects once"
+
+# Test 10: Verify personal test skill was created
+echo "Test 10: Checking test fixtures..."
 if [ -f "$OPENCODE_CONFIG_DIR/skills/personal-test/SKILL.md" ]; then
     echo "  [PASS] Personal test skill fixture created"
 else

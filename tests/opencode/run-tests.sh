@@ -43,9 +43,9 @@ while [[ $# -gt 0 ]]; do
             echo "  --help, -h         Show this help"
             echo ""
             echo "Tests:"
-            echo "  test-plugin-loading.sh  Verify plugin installation and structure"
-            echo "  test-tools.sh           Test use_skill and find_skills tools (integration)"
-            echo "  test-priority.sh        Test skill priority resolution (integration)"
+            echo "  test-plugin-loading.sh  Verify package/plugin structure"
+            echo "  test-tools.sh           Test native skill tool access (integration)"
+            echo "  test-duplicate-skills.sh Test duplicate native skill behavior (integration)"
             exit 0
             ;;
         *)
@@ -64,7 +64,7 @@ tests=(
 # Integration tests (require OpenCode)
 integration_tests=(
     "test-tools.sh"
-    "test-priority.sh"
+    "test-duplicate-skills.sh"
 )
 
 # Add integration tests if requested
