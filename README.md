@@ -1,12 +1,10 @@
 # SuperDuperPowers
 
-**Local-first skills and agents for deliberate coding workflows**
+**Harness-agnostic skills and reviewer agents for deliberate coding workflows**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2026.4.30--alpha.1-purple.svg)](CHANGELOG.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-plugin-111827.svg)](.opencode/INSTALL.md)
-[![Claude](https://img.shields.io/badge/Claude-skills-D97706.svg)](.claude-plugin/plugin.json)
-[![Codex](https://img.shields.io/badge/Codex-skills-10B981.svg)](.codex-plugin/plugin.json)
 
 SuperDuperPowers gives coding agents a practical workflow toolkit: brainstorm when the work is ambiguous, write plans when the scope is real, execute in grouped phases, review at meaningful checkpoints, and verify before claiming success.
 
@@ -14,24 +12,9 @@ This project is built from Jesse Vincent's [obra/superpowers](https://github.com
 
 ---
 
-## Features
+## Included Harness Config
 
-- Opt-in Superpowers routing with full flow, quick flow, and no-Superpowers modes
-- Brainstorming, planning, TDD, debugging, verification, and branch-finishing skills
-- Grouped execution with flat, dependency-ordered task lists for harnesses that do not support nested todos
-- Named reviewer agents: `spec-reviewer`, `code-reviewer`, `lite-spec-reviewer`, and `lite-code-reviewer`
-- Local-first finishing flow that prepares PR commands without pushing unless explicitly requested
-- OpenCode plugin support through `.opencode/plugins/superpowers.js`
-- Harness manifests for Claude, Cursor, Codex, and Gemini local testing
-- Calendar alpha versioning in the form `YYYY.M.D-alpha.N`
-
----
-
-## Quick Start
-
-SuperDuperPowers is alpha software. The intended product path is marketplace or harness plugin/extension installation. Until public marketplace publication exists, install from the current `main` branch or a local checkout for development and compatibility testing. This project is not distributed as a global npm CLI package.
-
-### OpenCode
+SuperDuperPowers is alpha software. The workflow core is intended to stay harness and model agnostic. The first included harness config is for OpenCode, installed as a package-style plugin from this repository. This project is not distributed as a global npm CLI package.
 
 Add the plugin to your OpenCode config, typically `opencode.json`:
 
@@ -51,45 +34,19 @@ For local checkout development, use a `git+file` source instead:
 }
 ```
 
-See [OpenCode Install](.opencode/INSTALL.md) for verification prompts.
+See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verification prompts.
 
-### Claude Code
+---
 
-Load this checkout as a local plugin while testing:
+## Features
 
-```bash
-claude --plugin-dir /path/to/superduperpowers
-```
-
-See [Claude Code Install](docs/claude-code.md) for hook and verification notes.
-
-### Codex
-
-Use the `.codex-plugin/plugin.json` manifest directly through Codex plugin flows, or add the repo-local testing marketplace from `.agents/plugins/marketplace.json` while developing.
-
-See [Codex Install](docs/codex.md) for local marketplace setup and verification prompts.
-
-### Gemini CLI
-
-Link a local checkout for development:
-
-```bash
-gemini extensions link /path/to/superduperpowers
-```
-
-See [Gemini CLI Install](docs/gemini.md) for install and verification prompts.
-
-### Cursor
-
-Use the `.cursor-plugin/plugin.json` manifest from a local checkout while testing Cursor-specific plugin behavior.
-
-See [Cursor Install](docs/cursor.md) for verification prompts.
-
-### Copilot
-
-Copilot support is guidance-compatible during alpha. Use shipped repository guidance (`CLAUDE.md`, `GEMINI.md`) and the Copilot tool mapping reference; repository checkouts may also expose AGENTS-style instructions. SuperDuperPowers does not claim a public Copilot plugin surface yet.
-
-See [Copilot Guidance](docs/copilot.md) for setup notes.
+- Opt-in Superpowers routing with full flow, quick flow, and no-Superpowers modes
+- Brainstorming, planning, TDD, debugging, verification, and branch-finishing skills
+- Grouped execution with flat, dependency-ordered task lists that stay readable in agent harnesses
+- Named reviewer agents: `spec-reviewer`, `code-reviewer`, `lite-spec-reviewer`, and `lite-code-reviewer`
+- Local-first finishing flow that prepares PR commands without pushing unless explicitly requested
+- Included OpenCode plugin entrypoint through `.opencode/plugins/superpowers.js`
+- Calendar alpha versioning in the form `YYYY.M.D-alpha.N`
 
 ---
 
@@ -97,15 +54,8 @@ See [Copilot Guidance](docs/copilot.md) for setup notes.
 
 | Guide | Description |
 |-------|-------------|
-| [OpenCode Install](.opencode/INSTALL.md) | OpenCode plugin setup and routing verification prompts |
-| [Claude Code Install](docs/claude-code.md) | Claude Code local plugin setup and hook notes |
-| [Codex Install](docs/codex.md) | Codex local plugin and local marketplace setup |
-| [Gemini CLI Install](docs/gemini.md) | Gemini extension setup and verification prompts |
-| [Cursor Install](docs/cursor.md) | Cursor plugin setup and routing verification prompts |
-| [Copilot Guidance](docs/copilot.md) | Copilot custom-instruction and tool-mapping compatibility notes |
-| [Harness Compatibility](docs/compatibility.md) | Capability matrix, fallback behavior, and smoke prompts by harness |
-| [Testing](docs/testing.md) | Development-checkout integration tests and transcript-based verification |
-| [Windows Hooks](docs/windows/polyglot-hooks.md) | Cross-platform hook behavior and Windows notes |
+| [OpenCode Install](.opencode/INSTALL.md) | Included OpenCode plugin setup and routing verification prompts |
+| [Testing](docs/testing.md) | Included OpenCode config tests and integration checks |
 | [Changelog](CHANGELOG.md) | Active release history |
 | [Acknowledgements](ACKNOWLEDGEMENTS.md) | Baseline platform attribution |
 
@@ -151,7 +101,7 @@ SuperDuperPowers is available under the MIT License. See [LICENSE](LICENSE) for 
 
 - [Jesse Vincent](https://github.com/obra) and [obra/superpowers](https://github.com/obra/superpowers) - the MIT-licensed baseline platform this project builds on
 - The Superpowers contributors whose work made the baseline platform possible
-- The coding-agent harness ecosystems that make portable skills and agents practical
+- The coding-agent harness ecosystems that make portable skills and reviewer agents practical
 
 ---
 
