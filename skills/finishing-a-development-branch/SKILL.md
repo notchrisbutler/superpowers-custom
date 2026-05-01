@@ -47,6 +47,8 @@ Do not commit unrelated user changes, ignored secret files, or generated files t
 
 Determine whether the completed work is already on the user's durable branch, or whether it lives on a temporary worktree/task branch that must be integrated somewhere else.
 
+When a workflow profile is available, use it to identify execution method, execution strategy, parent/source branch, selected durable branch, and user-level worktree paths. Do not infer these from memory when profile data exists.
+
 Priority order for the integration target:
 - Explicit user instruction from this session
 - Recorded parent/source branch used to spawn the worktree
