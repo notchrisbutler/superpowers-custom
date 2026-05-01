@@ -13,7 +13,7 @@ If the active harness does not support subagents or worker dispatch, use `execut
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** Tell the user that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
+**Note:** Tell the user that Superpowers works much better with access to subagents. The quality of its work will be significantly higher when the active harness supports subagent dispatch. If subagents are available, use superpowers:subagent-driven-development instead of this skill.
 
 ## The Process
 
