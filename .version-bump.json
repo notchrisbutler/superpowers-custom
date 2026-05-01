@@ -6,6 +6,7 @@
     "exclude": [
       "CHANGELOG.md",
       "docs/superpowers",
+      "docs/publishing.md",
       "node_modules",
       ".git",
       ".version-bump.json",
