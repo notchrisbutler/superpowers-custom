@@ -15,6 +15,7 @@ Removed files and intent:
 - `.claude-plugin/hooks.json`: Claude plugin hook configuration.
 - `.claude-plugin/marketplace.json`: Claude marketplace/package listing metadata.
 - `docs/claude-code.md`: Claude Code installation and usage documentation.
+- `docs/windows/polyglot-hooks.md`: Cross-platform Claude hook wrapper guidance.
 - `hooks/session-start`: Claude-oriented session startup hook.
 - `hooks/run-hook.cmd`: Windows hook runner used by Claude-oriented hook flows.
 
