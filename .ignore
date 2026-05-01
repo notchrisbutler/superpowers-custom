@@ -1,2 +1,6 @@
 !docs/superduperpowers/
 !.opencode/worktrees/
+!.opencode/node_modules/
+!.opencode/node_modules/@opencode-ai/
+!.opencode/node_modules/@opencode-ai/plugin/
+!.opencode/node_modules/@opencode-ai/plugin/**
