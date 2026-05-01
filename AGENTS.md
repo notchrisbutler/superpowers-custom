@@ -1,23 +1,26 @@
 # SuperDuperPowers - Contributor Notes
 
-SuperDuperPowers is an alpha skills and agents plugin. Keep changes focused on slim packaging, local-first harness support, marketplace/plugin-repository readiness, and practical skill workflows.
+SuperDuperPowers is an alpha skills and reviewer-agents plugin. Keep changes focused on slim packaging, harness-agnostic workflow sources, the included OpenCode config, marketplace/plugin-repository readiness, and practical skill workflows.
 
 ## Working Principles
 
 - Prefer small, reviewable changes over broad rewrites.
-- Keep documentation and workflows focused on this project rather than comparisons to other distributions.
+- Keep documentation and workflows harness-neutral unless documenting the included OpenCode setup.
 - Preserve attribution to Jesse Vincent ([@obra](https://github.com/obra)) and the [obra/superpowers](https://github.com/obra/superpowers) MIT-licensed baseline platform.
-- Keep harness-specific behavior explicit and tested in at least one relevant harness when practical.
-- Do not add third-party dependencies unless they are essential for a supported harness.
+- Keep included-harness behavior explicit and tested in OpenCode when practical.
+- Do not add third-party dependencies unless they are essential for the included OpenCode plugin support.
 - Treat `skills/` and `agents/` as the canonical workflow sources.
-- Treat `CLAUDE.md`, `GEMINI.md`, harness manifests, and OpenCode plugin code as adapters over the canonical sources.
+- Treat `skills/` and `agents/` as harness-agnostic workflow sources.
+- Treat `.opencode/plugins/superpowers.js`, `.opencode/INSTALL.md`, and package metadata as the only included harness adapter surface for now.
 
 ## Install And Release Posture
 
-- Primary distribution target is marketplace or harness plugin/extension installation.
+- Primary distribution target is marketplace or package-style plugin installation, starting with OpenCode.
 - Alpha installation may use local checkouts or GitHub repository references.
+- Document GitHub installs as `superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main`.
+- Document local checkout installs as `superduperpowers@git+file:///path/to/superduperpowers`.
 - Do not present `npm install -g superduperpowers` as a supported product path.
-- Keep npm metadata only where a supported harness needs it, such as OpenCode plugin resolution.
+- Keep npm metadata only where the included OpenCode plugin resolution needs it.
 - This project uses calendar alpha versions in the form `YYYY.M.D-alpha.N`. Active release history starts in `CHANGELOG.md`.
 
 ## Skill Changes
@@ -26,19 +29,19 @@ Skills shape agent behavior. Edit them carefully.
 
 - Keep wording direct, operational, and marketplace-appropriate.
 - Avoid adding process unless it solves a concrete problem in this project.
-- Keep canonical skill wording harness-neutral when practical.
-- Put harness-specific tool translations in adapter docs or `skills/using-superpowers/references/`.
-- Test changed skills with realistic prompts when practical.
-- Do not add browser-server requirements unless needed by an explicitly supported harness.
+- Keep canonical skill wording harness-neutral when practical and avoid stale adapter references.
+- Put OpenCode-specific tool translations in active OpenCode docs only when they help users verify included behavior.
+- Test changed skills with realistic prompts in the included OpenCode harness when practical.
+- Do not add browser-server requirements unless the included OpenCode plugin support requires them.
 - Do not instruct agents to commit changes unless the user explicitly requested commits or selected a Superpowers workflow that documents local workflow commits at spec, plan, or task-scope checkpoints. Never push without an explicit user request.
 
 ## Agent Changes
 
 - Keep `agents/*.md` as the canonical reviewer-agent definitions.
 - Keep fallback reviewer prompts aligned with the canonical agent definitions.
-- Keep reviewer behavior read-only where the harness supports tool restrictions.
-- Document fallback behavior for harnesses without named-agent support.
+- Keep reviewer behavior read-only where the active harness supports tool restrictions.
+- Verify reviewer registration through the included OpenCode plugin when changing agent definitions or plugin packaging.
 
 ## Pull Requests
 
-For pull requests, explain the problem, summarize the change, list verification performed, and call out harness compatibility risks.
+For pull requests, explain the problem, summarize the change, list verification performed, and call out included OpenCode compatibility risks.
