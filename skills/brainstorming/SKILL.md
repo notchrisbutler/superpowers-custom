@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "Use when the user explicitly asks for Superpowers brainstorming or when a request clearly needs design discovery, decomposition, or an approved spec before implementation."
+description: "Use when the user explicitly asks for SuperDuperPowers brainstorming or when a request clearly needs design discovery, decomposition, or an approved spec before implementation."
 ---
 
 # Brainstorming Ideas Into Designs
@@ -15,21 +15,22 @@ Once this skill is intentionally selected, do NOT invoke any implementation skil
 
 ## When To Use This Skill
 
-Use this skill for explicit Superpowers brainstorming requests and for work that clearly needs design discovery before implementation. Do not use this skill for quick flow, small reviews, wording edits, simple config tweaks, bounded code changes, or no-Superpowers work unless the user asks for brainstorming.
+Use this skill for explicit SuperDuperPowers brainstorming requests and for work that clearly needs design discovery before implementation. Do not use this skill for quick flow, small reviews, wording edits, simple config tweaks, bounded code changes, or no-SuperDuperPowers work unless the user asks for brainstorming.
 
 ## Checklist
 
 When this skill is selected, create a task for each of these items and complete them in order:
 
-1. **Explore project context** — check files, docs, recent commits
-2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-3. **Propose 2-3 approaches** — with trade-offs and your recommendation
-4. **Present design** — in sections scaled to their complexity, get user approval after each section
-5. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
-6. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-7. **User reviews written spec** — ask user to review the spec file before proceeding
-8. **Commit approved spec** — when workflow commits are enabled, commit the approved spec before planning
-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+1. **Read or establish workflow profile** — capture route, docs policy, runtime defaults, branch policy, and testing intensity when profile tooling is available
+2. **Explore project context** — check files, docs, recent commits
+3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+4. **Propose 2-3 approaches** — with trade-offs and your recommendation
+5. **Present design** — in sections scaled to their complexity, get user approval after each section
+6. **Write design doc** — save to `{DOCS_ROOT}/superduperpowers/specs/YYYY-MM-DD-<topic>-design.md`
+7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
+8. **User reviews written spec** — ask user to review the spec file before proceeding
+9. **Record approved spec in profile** — update the workflow profile or explicit handoff context with the approved spec path
+10. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
 ## Process Flow
 
@@ -43,7 +44,7 @@ digraph brainstorming {
     "Write design doc" [shape=box];
     "Spec self-review\n(fix inline)" [shape=box];
     "User reviews spec?" [shape=diamond];
-    "Commit approved spec\n(if workflow commits enabled)" [shape=box];
+    "Record approved spec\nin profile" [shape=box];
     "Invoke writing-plans skill" [shape=doublecircle];
 
     "Explore project context" -> "Ask clarifying questions";
@@ -55,8 +56,8 @@ digraph brainstorming {
     "Write design doc" -> "Spec self-review\n(fix inline)";
     "Spec self-review\n(fix inline)" -> "User reviews spec?";
     "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Commit approved spec\n(if workflow commits enabled)" [label="approved"];
-    "Commit approved spec\n(if workflow commits enabled)" -> "Invoke writing-plans skill";
+    "User reviews spec?" -> "Record approved spec\nin profile" [label="approved"];
+    "Record approved spec\nin profile" -> "Invoke writing-plans skill";
 }
 ```
 
@@ -105,12 +106,10 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design (spec) to `{DOCS_ROOT}/superduperpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
-- Do not commit the spec before user review approval. If workflow commits are enabled, commit the approved spec after the user approves it and before invoking writing-plans.
-- Before committing, verify the design document path is not ignored. If it is ignored, ask the user whether to keep it local, choose a trackable path, or force-add it.
-- If workflow commits are not enabled, leave the design document uncommitted and report its path.
+- Generated specs are local-only by default. Do not commit or force-add the generated spec unless the user explicitly asks or repo instructions require it.
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:
@@ -129,8 +128,8 @@ After the spec review loop passes, ask the user to review the written spec befor
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 
-**Spec Commit Gate:**
-After the user approves the written spec, commit it locally when workflow commits are enabled. This creates the stable baseline that writing-plans and execution can reference. Do not push unless the user explicitly requests it.
+**Generated-Doc Policy Gate:**
+After the user approves the written spec, update the workflow profile or explicit handoff context with the spec path. Do not commit or force-add the generated spec by default. If repo instructions or the user explicitly require generated docs to be committed, record that override in the profile before planning.
 
 **Implementation:**
 
