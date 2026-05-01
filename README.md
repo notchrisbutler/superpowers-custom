@@ -14,14 +14,23 @@ This project is built from Jesse Vincent's [obra/superpowers](https://github.com
 
 ## Included Harness Config
 
-SuperDuperPowers is alpha software. The workflow core is intended to stay harness and model agnostic. The first included harness config is for OpenCode, installed as a package-style plugin from this repository. This project is not distributed as a global npm CLI package.
+SuperDuperPowers is alpha software. The workflow core is intended to stay harness and model agnostic. The first included harness config is for OpenCode, installed as a package-style plugin from npm.
 
 Add the plugin to your OpenCode config, typically `opencode.json`:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main"]
+  "plugin": ["superduperpowers@npm:@notchrisbutler/superduperpowers"]
+}
+```
+
+If npm resolution is unavailable, use the GitHub repository directly as a backup:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git"]
 }
 ```
 
@@ -35,8 +44,6 @@ For local checkout development, use a `git+file` source instead:
 ```
 
 See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verification prompts.
-
-The future npm registry package name is `@notchrisbutler/superduperpowers`; keep using the Git source above until npm publication is configured and verified.
 
 ---
 
