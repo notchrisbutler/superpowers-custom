@@ -3,7 +3,7 @@
 **Harness-agnostic skills and reviewer agents for deliberate coding workflows**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2026.4.30-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026.5.1-purple.svg)](CHANGELOG.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-plugin-111827.svg)](.opencode/INSTALL.md)
 
 SuperDuperPowers gives coding agents a practical workflow toolkit: brainstorm when the work is ambiguous, write plans when the scope is real, execute in grouped phases, review at meaningful checkpoints, and verify before claiming success.
