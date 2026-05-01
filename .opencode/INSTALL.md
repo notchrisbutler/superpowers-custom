@@ -28,6 +28,18 @@ For development against a local checkout, use a `git+file` source:
 
 Use an absolute path to the repository checkout. Restart OpenCode after changing the checkout or plugin config when you need to verify package loading from a clean session.
 
+## Future npm Registry Install
+
+After npm publication is configured and verified, the package name will be `@notchrisbutler/superduperpowers`. Until then, keep using the Git package install above.
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Future npm registry install, not active yet:
+  // "plugin": ["@notchrisbutler/superduperpowers"]
+}
+```
+
 ## What The Plugin Registers
 
 The OpenCode plugin entrypoint is `.opencode/plugins/superpowers.js`.

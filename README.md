@@ -3,7 +3,7 @@
 **Harness-agnostic skills and reviewer agents for deliberate coding workflows**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2026.4.30--alpha.1-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026.4.30-purple.svg)](CHANGELOG.md)
 [![OpenCode](https://img.shields.io/badge/OpenCode-plugin-111827.svg)](.opencode/INSTALL.md)
 
 SuperDuperPowers gives coding agents a practical workflow toolkit: brainstorm when the work is ambiguous, write plans when the scope is real, execute in grouped phases, review at meaningful checkpoints, and verify before claiming success.
@@ -36,6 +36,8 @@ For local checkout development, use a `git+file` source instead:
 
 See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verification prompts.
 
+The future npm registry package name is `@notchrisbutler/superduperpowers`; keep using the Git source above until npm publication is configured and verified.
+
 ---
 
 ## Features
@@ -46,7 +48,7 @@ See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verifica
 - Named reviewer agents: `spec-reviewer`, `code-reviewer`, `lite-spec-reviewer`, and `lite-code-reviewer`
 - Local-first finishing flow that prepares PR commands without pushing unless explicitly requested
 - Included OpenCode plugin entrypoint through `.opencode/plugins/superpowers.js`
-- Calendar alpha versioning in the form `YYYY.M.D-alpha.N`
+- Calendar release versioning in the form `YYYY.M.D`, with `YYYY.M.D-N` for additional same-day releases
 
 ---
 
@@ -56,6 +58,7 @@ See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verifica
 |-------|-------------|
 | [OpenCode Install](.opencode/INSTALL.md) | Included OpenCode plugin setup and routing verification prompts |
 | [Testing](docs/testing.md) | Included OpenCode config tests and integration checks |
+| [Publishing](docs/publishing.md) | Manual npm Trusted Publishing release flow |
 | [Changelog](CHANGELOG.md) | Active release history |
 | [Acknowledgements](ACKNOWLEDGEMENTS.md) | Baseline platform attribution |
 

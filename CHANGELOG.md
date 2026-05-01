@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026.4.30-alpha.1
+## 2026.4.30
 
 Initial alpha release of SuperDuperPowers.
 

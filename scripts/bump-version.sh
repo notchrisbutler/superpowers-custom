@@ -4,6 +4,7 @@
 # with drift detection and repo-wide audit for missed files.
 #
 # Usage:
+#   bump-version.sh --next          Bump to today's next release version
 #   bump-version.sh <new-version>   Bump all declared files to new version
 #   bump-version.sh --check         Report current versions (detect drift)
 #   bump-version.sh --audit         Check + grep repo for old version strings
@@ -49,6 +50,72 @@ declared_files() {
 # Read the audit exclude patterns from config.
 audit_excludes() {
   jq -r '.audit.exclude[]' "$CONFIG" 2>/dev/null
+}
+
+path_is_audit_excluded() {
+  local rel_path="$1" pattern
+  while IFS= read -r pattern; do
+    [[ -z "$pattern" ]] && continue
+    if [[ "$rel_path" == "$pattern" || "$rel_path" == "$pattern"/* || "$(basename "$rel_path")" == "$pattern" ]]; then
+      return 0
+    fi
+  done < <(audit_excludes)
+  return 1
+}
+
+current_declared_version() {
+  while IFS=$'\t' read -r path field; do
+    local fullpath="$REPO_ROOT/$path"
+    [[ -f "$fullpath" ]] && read_json_field "$fullpath" "$field"
+  done < <(declared_files) | sort | uniq -c | sort -rn | head -1 | awk '{print $2}'
+}
+
+is_project_version() {
+  echo "$1" | grep -qE '^[0-9]{4}\.[1-9][0-9]*\.[1-9][0-9]*(-[1-9][0-9]*)?$'
+}
+
+badge_version() {
+  # shields.io uses -- to render a literal hyphen in badge text.
+  printf '%s' "$1" | sed 's/-/--/g'
+}
+
+update_readme_badge() {
+  local version="$1"
+  local readme="$REPO_ROOT/README.md"
+  [[ -f "$readme" ]] || return 0
+
+  local tmp="${readme}.tmp"
+  sed -E "s#version-[0-9]{4}\.[0-9]+\.[0-9]+(--[0-9]+|--alpha\.[0-9]+)?-purple\.svg#version-$(badge_version "$version")-purple.svg#g" "$readme" > "$tmp"
+  mv "$tmp" "$readme"
+}
+
+next_version_for_today() {
+  local today today_re current max_suffix version tag_name
+  today=$(date '+%Y.%-m.%-d')
+  today_re=${today//./\\.}
+  current=$(current_declared_version)
+  max_suffix=-1
+
+  if [[ "$current" == "$today" ]]; then
+    max_suffix=0
+  elif [[ "$current" =~ ^${today_re}-([1-9][0-9]*)$ ]]; then
+    max_suffix="${BASH_REMATCH[1]}"
+  fi
+
+  while IFS= read -r tag_name; do
+    version="${tag_name#v}"
+    if [[ "$version" == "$today" ]]; then
+      (( max_suffix < 0 )) && max_suffix=0
+    elif [[ "$version" =~ ^${today_re}-([1-9][0-9]*)$ ]]; then
+      (( BASH_REMATCH[1] > max_suffix )) && max_suffix="${BASH_REMATCH[1]}"
+    fi
+  done < <(git -C "$REPO_ROOT" tag --list "v${today}*")
+
+  if (( max_suffix < 0 )); then
+    printf '%s\n' "$today"
+  else
+    printf '%s-%s\n' "$today" "$((max_suffix + 1))"
+  fi
 }
 
 # --- commands ---
@@ -127,6 +194,7 @@ cmd_audit() {
   while IFS=$'\t' read -r path _field; do
     declared_paths+=("$path")
   done < <(declared_files)
+  declared_paths+=("README.md")
 
   # Grep for the version string
   local found_undeclared=0
@@ -135,6 +203,10 @@ cmd_audit() {
     match_file=$(echo "$match" | cut -d: -f1)
     # Make path relative to repo root
     local rel_path="${match_file#$REPO_ROOT/}"
+
+    if path_is_audit_excluded "$rel_path"; then
+      continue
+    fi
 
     # Check if this file is in the declared list
     local is_declared=0
@@ -160,15 +232,15 @@ cmd_audit() {
     echo ""
     echo "Review the above files — if they should be bumped, add them to .version-bump.json"
     echo "If they should be skipped, add them to the audit.exclude list."
+    return 1
   fi
 }
 
 cmd_bump() {
   local new_version="$1"
 
-  # Validate date-version format used by this project, with optional prerelease.
-  if ! echo "$new_version" | grep -qE '^[0-9]{4}\.[1-9][0-9]*\.[1-9][0-9]*(-[0-9A-Za-z.-]+)?$'; then
-    echo "error: '$new_version' doesn't look like a project version (expected YYYY.M.D or YYYY.M.D-alpha.N)" >&2
+  if ! is_project_version "$new_version"; then
+    echo "error: '$new_version' doesn't look like a project version (expected YYYY.M.D or YYYY.M.D-N)" >&2
     exit 1
   fi
 
@@ -187,6 +259,8 @@ cmd_bump() {
     printf "  %-45s  %s -> %s\n" "$path ($field)" "$old_ver" "$new_version"
   done < <(declared_files)
 
+  update_readme_badge "$new_version"
+
   echo ""
   echo "Done. Running audit to check for missed files..."
   echo ""
@@ -196,6 +270,9 @@ cmd_bump() {
 # --- main ---
 
 case "${1:-}" in
+  --next)
+    cmd_bump "$(next_version_for_today)"
+    ;;
   --check)
     cmd_check
     ;;
@@ -203,9 +280,10 @@ case "${1:-}" in
     cmd_audit
     ;;
   --help|-h|"")
-    echo "Usage: bump-version.sh <new-version> | --check | --audit"
+    echo "Usage: bump-version.sh --next | <new-version> | --check | --audit"
     echo ""
-    echo "  <new-version>  Bump all declared files to the given date version, e.g. 2026.4.30-alpha.1"
+    echo "  --next         Bump to today's next release version based on package.json and v* tags"
+    echo "  <new-version>  Bump all declared files to the given date version, e.g. 2026.4.30 or 2026.4.30-1"
     echo "  --check        Show current versions, detect drift"
     echo "  --audit        Check + scan repo for undeclared version references"
     exit 0

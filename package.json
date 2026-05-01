@@ -1,9 +1,16 @@
 {
-  "name": "superduperpowers",
-  "version": "2026.4.30-alpha.1",
-  "private": true,
+  "name": "@notchrisbutler/superduperpowers",
+  "version": "2026.4.30",
   "type": "module",
   "main": ".opencode/plugins/superpowers.js",
+  "scripts": {
+    "version:next": "scripts/bump-version.sh --next",
+    "version:check": "scripts/bump-version.sh --check",
+    "version:audit": "scripts/bump-version.sh --audit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "agents/",
     "skills/",

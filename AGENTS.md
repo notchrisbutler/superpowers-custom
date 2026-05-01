@@ -17,11 +17,12 @@ SuperDuperPowers is an alpha skills and reviewer-agents plugin. Keep changes foc
 
 - Primary distribution target is marketplace or package-style plugin installation, starting with OpenCode.
 - Alpha installation may use local checkouts or GitHub repository references.
-- Document GitHub installs as `superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main`.
-- Document local checkout installs as `superduperpowers@git+file:///path/to/superduperpowers`.
-- Do not present `npm install -g superduperpowers` as a supported product path.
+- Document GitHub installs as `superduperpowers@git+https://github.com/notchrisbutler/superduperpowers.git#main` until npm publication is active.
+- Document local checkout installs as `superduperpowers@git+file:///path/to/superduperpowers` until npm publication is active.
+- Document the future npm package name as `@notchrisbutler/superduperpowers` only where npm publishing or future registry installation is discussed.
+- Do not present `npm install -g @notchrisbutler/superduperpowers` as a supported product path.
 - Keep npm metadata only where the included OpenCode plugin resolution needs it.
-- This project uses calendar alpha versions in the form `YYYY.M.D-alpha.N`. Active release history starts in `CHANGELOG.md`.
+- This project uses calendar versions in the form `YYYY.M.D`, with `YYYY.M.D-N` for additional same-day releases. Active release history starts in `CHANGELOG.md`.
 
 ## Skill Changes
 

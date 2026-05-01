@@ -5,6 +5,7 @@
   "audit": {
     "exclude": [
       "CHANGELOG.md",
+      "docs/superpowers",
       "node_modules",
       ".git",
       ".version-bump.json",
