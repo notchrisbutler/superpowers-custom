@@ -48,10 +48,31 @@ The OpenCode plugin entrypoint is `.opencode/plugins/superduperpowers.js`.
 - It adds the packaged `skills/` directory to OpenCode skill discovery.
 - It registers reviewer subagents from `agents/` as named OpenCode subagents: `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer`.
 - It injects the `using-superpowers` bootstrap into the first user message once per session so routing guidance is available without duplicating it on later turns.
-- Custom tools: `sdp_profile`, `sdp_setup_hygiene`, and `sdp_branch_context`.
+- Custom tools: `sdp_profile`, `sdp_setup_hygiene`, `sdp_branch_context`, and `sdp_doctor`.
 - User-level runtime state and default worktrees under `{OPENCODE_CONFIG_DIR}/superduperpowers/`.
 
 Bundled agents do not need to be copied into a project. The plugin registers the packaged agent definitions directly when it loads.
+
+## Registered Commands
+
+The plugin registers OpenCode TUI slash commands through `config.command`; no command files need to be copied.
+
+- `/sdp` - main SuperDuperPowers entrypoint.
+- `/superduperpowers` - primary readable alias behavior for `/sdp`.
+- `/superpowers` - legacy compatibility alias behavior.
+- `/brainstorm` - start the full brainstorming workflow.
+- `/quick-flow` - use lightweight SuperDuperPowers guidance for bounded work.
+- `/write-plan` - write an implementation plan from an approved spec or design.
+- `/execute-plan` - execute an approved plan after execution choices are recorded.
+- `/sdp-status` - run read-only diagnostics through `sdp_doctor`.
+- `/sdp-profile` - summarize the active workflow profile.
+- `/sdp-cleanup` - inspect stale runtime state and clean only after confirmation unless cleanup was explicitly requested.
+
+## Runtime Drift Repair
+
+The plugin may automatically repair corrupted SuperDuperPowers-owned session state under `{OPENCODE_CONFIG_DIR}/superduperpowers/state/{sessionID}/`. Corrupt state is moved to `{OPENCODE_CONFIG_DIR}/superduperpowers/quarantine/` before replacement.
+
+Automatic repair never edits `opencode.json`, project files, generated specs/plans, plugin shims, git branches, commits, or the staging area. Use `/sdp-status` to see repair history and remaining warnings.
 
 ## Verify
 

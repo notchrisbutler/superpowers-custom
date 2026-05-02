@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { expectedCommandNames } from './sdp-registration.js';
 
 const SDP_SCHEMA_VERSION = 1;
 const SDP_RUNTIME_DIR = 'superduperpowers';
@@ -93,6 +94,86 @@ const stringProfileInputKeys = new Set([
 const toPosixPath = (value) => value.split(path.sep).join('/');
 const nowIso = () => new Date().toISOString();
 
+const isPathInside = (parent, child) => {
+  const relative = path.relative(parent, child);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+};
+
+const isSafePathSegment = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]+$/.test(value);
+
+export const validateRuntimePathContainment = (paths) => {
+  const errors = [];
+  const sessionID = paths.sessionID || paths.sessionId || null;
+  if (sessionID && !isSafePathSegment(sessionID)) errors.push('sessionID must be a safe path segment');
+  if (paths.stateDir) {
+    const relative = path.relative(paths.stateRoot, paths.stateDir);
+    if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) errors.push('stateDir is outside SuperDuperPowers state root');
+  }
+  if (paths.quarantineDir && !isPathInside(paths.quarantineRoot, paths.quarantineDir)) errors.push('quarantineDir is outside SuperDuperPowers quarantine root');
+  if (paths.repairTempDir && !isPathInside(paths.quarantineRoot, paths.repairTempDir)) errors.push('repairTempDir is outside SuperDuperPowers quarantine root');
+  return errors;
+};
+
+const safePathSegment = (value) => String(value || 'unknown').replace(/[^A-Za-z0-9_.-]/g, '_');
+
+const isSafeProjectRelativePath = (value) => {
+  if (!value || typeof value !== 'string' || path.isAbsolute(value)) return false;
+  return !value.split(/[\\/]+/).some((segment) => segment === '..');
+};
+
+const validateRuntimeParentPaths = ({ runtimeRoot, stateRoot, quarantineRoot }) => {
+  const errors = [];
+  for (const [label, dirPath] of Object.entries({ runtimeRoot, stateRoot, quarantineRoot })) {
+    if (!dirPath) continue;
+    try {
+      const stat = fs.lstatSync(dirPath);
+      if (stat.isSymbolicLink()) errors.push(`${label} must not be a symlink`);
+      if (!stat.isDirectory()) errors.push(`${label} must be a directory`);
+    } catch (error) {
+      if (error.code !== 'ENOENT') errors.push(`invalid ${label}: ${error.message}`);
+    }
+  }
+  return errors;
+};
+
+const doctorCheck = (checks, id, status, message, details = {}) => {
+  checks.push({ id, status, message, details });
+};
+
+const fileExists = (filePath) => {
+  try {
+    return fs.existsSync(filePath);
+  } catch {
+    return false;
+  }
+};
+
+const dirExists = (dirPath) => {
+  try {
+    return fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory();
+  } catch {
+    return false;
+  }
+};
+
+const readTextSafe = (filePath) => {
+  try {
+    return fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return '';
+  }
+};
+
+const summarizeDoctor = (checks) => ({
+  ok: checks.every((check) => check.status !== 'error'),
+  errors: checks.filter((check) => check.status === 'error').length,
+  warnings: checks.filter((check) => check.status === 'warning').length,
+  recommendations: checks
+    .filter((check) => check.status !== 'ok')
+    .map((check) => ({ id: check.id, recommendation: check.recommendation || check.message })),
+  checks
+});
+
 const projectKeyFor = (directory) => {
   const normalized = path.resolve(directory || process.cwd());
   const base = path.basename(normalized).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project';
@@ -107,7 +188,7 @@ export const getRuntimePaths = (configDir, sessionID, directory) => {
   const projectKey = projectKeyFor(directory);
   const worktreeRoot = path.join(runtimeRoot, 'worktrees', projectKey);
   const quarantineRoot = path.join(runtimeRoot, 'quarantine');
-  return { runtimeRoot, stateRoot, stateDir, worktreeRoot, quarantineRoot, projectKey };
+  return { runtimeRoot, stateRoot, stateDir, worktreeRoot, quarantineRoot, projectKey, sessionID };
 };
 
 const selectDocsRoot = (directory, override) => {
@@ -172,6 +253,7 @@ const hasSecretLikeKey = (value) => {
 
 const validateProfile = (profile, { allowIncomplete = false } = {}) => {
   const errors = [];
+  if (!profile || typeof profile !== 'object' || Array.isArray(profile)) return { ok: false, errors: ['profile must be an object'] };
   for (const key of Object.keys(profile)) {
     if (!SDP_PROFILE_KEYS.has(key)) errors.push(`unknown profile field: ${key}`);
   }
@@ -196,6 +278,7 @@ const validateProfileInput = (value, { allowFull = false, comparisonProfile = nu
     if (stringProfileInputKeys.has(key) && value[key] !== null && typeof value[key] !== 'string') errors.push(`profile field must be a string: ${key}`);
     if (nullableDecisionKeys.has(key) && value[key] === null) continue;
     if (key === 'route' && value[key] !== undefined && !allowedRouteValues.includes(value[key])) errors.push('invalid route');
+    if (key === 'docsRoot' && value[key] !== undefined && !isSafeProjectRelativePath(value[key])) errors.push('invalid docsRoot');
     if (key === 'testingIntensity' && value[key] !== undefined && !allowedTestingIntensityValues.includes(value[key])) errors.push('invalid testingIntensity');
     if (key === 'generatedDocsPolicy' && value[key] !== undefined && value[key] !== 'local-only') errors.push('invalid generatedDocsPolicy');
     if (key === 'cleanupPolicy' && (typeof value[key] !== 'object' || value[key] === null || Array.isArray(value[key]))) errors.push('cleanupPolicy must be an object');
@@ -231,7 +314,14 @@ const writeJsonAtomic = (filePath, value) => {
 
 const appendEvent = (stateDir, event) => {
   fs.mkdirSync(stateDir, { recursive: true });
-  fs.appendFileSync(path.join(stateDir, 'events.jsonl'), `${JSON.stringify({ timestamp: nowIso(), ...event })}\n`);
+  const eventsPath = path.join(stateDir, 'events.jsonl');
+  const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND | (fs.constants.O_NOFOLLOW || 0);
+  const fd = fs.openSync(eventsPath, flags, 0o666);
+  try {
+    fs.writeSync(fd, `${JSON.stringify({ timestamp: nowIso(), ...event })}\n`);
+  } finally {
+    fs.closeSync(fd);
+  }
 };
 
 const readJsonFile = (filePath) => {
@@ -242,38 +332,249 @@ const readJsonFile = (filePath) => {
   }
 };
 
+const inspectRuntimeStateFile = (filePath) => {
+  try {
+    const stat = fs.lstatSync(filePath);
+    const errors = [];
+    if (stat.isSymbolicLink()) errors.push(`${path.basename(filePath)} must not be a symlink`);
+    if (!stat.isFile()) errors.push(`${path.basename(filePath)} must be a file`);
+    return { exists: true, errors };
+  } catch (error) {
+    if (error.code === 'ENOENT') return { exists: false, errors: [] };
+    return { exists: false, errors: [`invalid ${path.basename(filePath)}: ${error.message}`] };
+  }
+};
+
+const validateEventAppendTarget = (stateDir) => {
+  const eventsPath = path.join(stateDir, 'events.jsonl');
+  const inspection = inspectRuntimeStateFile(eventsPath);
+  return inspection.exists ? inspection.errors : [];
+};
+
+export const readProfileJsonSafe = (profilePath) => {
+  const profileFile = inspectRuntimeStateFile(profilePath);
+  if (!profileFile.exists) return { value: null, errors: [] };
+  if (profileFile.errors.length > 0) return { value: null, errors: profileFile.errors };
+  const parsed = readJsonFile(profilePath);
+  if (parsed.errors.length > 0) return parsed;
+  if (!parsed.value || typeof parsed.value !== 'object' || Array.isArray(parsed.value)) return { value: null, errors: ['profile must be an object'] };
+  return parsed;
+};
+
+const validateJsonLinesFile = (filePath) => {
+  const errors = [];
+  const inspection = inspectRuntimeStateFile(filePath);
+  if (!inspection.exists) return [`missing ${path.basename(filePath)}`];
+  if (inspection.errors.length > 0) return inspection.errors;
+  try {
+    const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/).filter(Boolean);
+    lines.forEach((line, index) => {
+      try {
+        const event = JSON.parse(line);
+        if (!event || typeof event !== 'object' || Array.isArray(event)) errors.push(`${path.basename(filePath)} line ${index + 1} must be an object`);
+      } catch (error) {
+        errors.push(`invalid JSON in ${path.basename(filePath)} line ${index + 1}: ${error.message}`);
+      }
+    });
+  } catch (error) {
+    errors.push(`invalid ${path.basename(filePath)}: ${error.message}`);
+  }
+  return errors;
+};
+
 const validateRelatedStateFiles = (stateDir) => {
   const errors = [];
   if (!stateDir) return errors;
 
   const artifactsPath = path.join(stateDir, 'artifacts.json');
-  if (!fs.existsSync(artifactsPath)) {
+  const artifactsFile = inspectRuntimeStateFile(artifactsPath);
+  if (!artifactsFile.exists) {
     errors.push('missing artifacts.json');
   } else {
-    const artifacts = readJsonFile(artifactsPath);
+    errors.push(...artifactsFile.errors);
+    const artifacts = artifactsFile.errors.length === 0 ? readJsonFile(artifactsPath) : { value: null, errors: [] };
     errors.push(...artifacts.errors);
-    if (artifacts.value) {
+    if (artifacts.errors.length === 0 && (!artifacts.value || typeof artifacts.value !== 'object' || Array.isArray(artifacts.value))) {
+      errors.push('artifacts.json must be an object');
+    } else if (artifacts.value) {
       if (artifacts.value.schemaVersion !== SDP_SCHEMA_VERSION) errors.push('artifacts.json schemaVersion must be 1');
       if (!Array.isArray(artifacts.value.artifacts)) errors.push('artifacts.json artifacts must be an array');
     }
   }
 
   const eventsPath = path.join(stateDir, 'events.jsonl');
-  if (!fs.existsSync(eventsPath)) {
-    errors.push('missing events.jsonl');
-  } else {
-    const lines = fs.readFileSync(eventsPath, 'utf8').split(/\r?\n/).filter(Boolean);
-    lines.forEach((line, index) => {
-      try {
-        const event = JSON.parse(line);
-        if (!event || typeof event !== 'object' || Array.isArray(event)) errors.push(`events.jsonl line ${index + 1} must be an object`);
-      } catch (error) {
-        errors.push(`invalid JSON in events.jsonl line ${index + 1}: ${error.message}`);
-      }
-    });
-  }
+  errors.push(...validateJsonLinesFile(eventsPath));
 
   return errors;
+};
+
+const inspectRuntimeDrift = (configDir, context) => {
+  const directory = context.directory || context.worktree || process.cwd();
+  const baseProfile = buildDefaultProfile({ configDir, context: { ...context, directory }, profile: {} });
+  const stateDir = baseProfile.stateDir;
+  const parentPathErrors = validateRuntimeParentPaths(baseProfile);
+  if (parentPathErrors.length > 0) return { drifted: true, reason: 'invalid-runtime-path', baseProfile, errors: parentPathErrors };
+  const containmentErrors = validateRuntimePathContainment(baseProfile);
+  if (containmentErrors.length > 0) return { drifted: true, reason: 'invalid-runtime-path', baseProfile, errors: containmentErrors };
+  if (stateDir && !isPathInside(baseProfile.stateRoot, stateDir)) {
+    return { drifted: true, reason: 'invalid-runtime-path', baseProfile, errors: ['stateDir is outside SuperDuperPowers runtime state'] };
+  }
+  if (!stateDir) return { drifted: false, reason: 'state-not-initialized', baseProfile, errors: [] };
+  try {
+    const stateDirStat = fs.lstatSync(stateDir);
+    if (stateDirStat.isSymbolicLink()) return { drifted: true, reason: 'runtime-state-drift', baseProfile, errors: ['stateDir must not be a symlink'] };
+    if (!stateDirStat.isDirectory()) return { drifted: true, reason: 'runtime-state-drift', baseProfile, errors: ['stateDir must be a directory'] };
+  } catch (error) {
+    if (error.code === 'ENOENT') return { drifted: false, reason: 'state-not-initialized', baseProfile, errors: [] };
+    return { drifted: true, reason: 'runtime-state-drift', baseProfile, errors: [`invalid stateDir: ${error.message}`] };
+  }
+
+  const errors = [];
+  const profilePath = path.join(stateDir, 'profile.json');
+  const artifactsPath = path.join(stateDir, 'artifacts.json');
+  const eventsPath = path.join(stateDir, 'events.jsonl');
+
+  const profileFile = inspectRuntimeStateFile(profilePath);
+  const artifactsFile = inspectRuntimeStateFile(artifactsPath);
+  errors.push(...profileFile.errors, ...artifactsFile.errors);
+  const profile = profileFile.exists && profileFile.errors.length === 0 ? readJsonFile(profilePath) : { value: null, errors: profileFile.exists ? [] : ['missing profile.json'] };
+  const expectedProfile = profile.value && isSafeProjectRelativePath(profile.value.docsRoot)
+    ? buildDefaultProfile({ configDir, context: { ...context, directory }, profile: { docsRoot: profile.value.docsRoot } })
+    : baseProfile;
+  errors.push(...profile.errors);
+  if (profile.errors.length === 0 && (!profile.value || typeof profile.value !== 'object' || Array.isArray(profile.value))) {
+    errors.push('profile must be an object');
+  } else if (profile.value) {
+    errors.push(...validateProfile(profile.value, { allowIncomplete: profile.value.route === null }).errors);
+    if (!isSafeProjectRelativePath(profile.value.docsRoot)) errors.push('profile docsRoot must be a project-relative path');
+    if (profile.value.sessionId !== context.sessionID) errors.push('profile sessionId does not match active session');
+    if (profile.value.docsRoot !== expectedProfile.docsRoot) errors.push('profile docsRoot does not match active docs root');
+    if (profile.value.runtimeRoot !== expectedProfile.runtimeRoot) errors.push('profile runtimeRoot does not match active config directory');
+    if (profile.value.stateRoot !== expectedProfile.stateRoot) errors.push('profile stateRoot does not match active config directory');
+    if (profile.value.stateDir !== expectedProfile.stateDir) errors.push('profile stateDir does not match active session');
+    if (profile.value.worktreeRoot !== expectedProfile.worktreeRoot) errors.push('profile worktreeRoot does not match active directory');
+    if (profile.value.sdpDocsRoot !== expectedProfile.sdpDocsRoot) errors.push('profile sdpDocsRoot does not match active docs root');
+    if (profile.value.specsDir !== expectedProfile.specsDir) errors.push('profile specsDir does not match active docs root');
+    if (profile.value.plansDir !== expectedProfile.plansDir) errors.push('profile plansDir does not match active docs root');
+    if (profile.value.harness?.configDir !== configDir) errors.push('profile harness configDir does not match active config directory');
+    if (profile.value.project?.root !== directory) errors.push('profile project root does not match active directory');
+    if (profile.value.project?.projectKey !== expectedProfile.project.projectKey) errors.push('profile projectKey does not match active directory');
+  }
+
+  if (!artifactsFile.exists) {
+    errors.push('missing artifacts.json');
+  } else {
+    const artifacts = artifactsFile.errors.length === 0 ? readJsonFile(artifactsPath) : { value: null, errors: [] };
+    errors.push(...artifacts.errors);
+    if (artifacts.errors.length === 0 && (!artifacts.value || typeof artifacts.value !== 'object' || Array.isArray(artifacts.value))) {
+      errors.push('artifacts.json must be an object');
+    } else if (artifacts.value) {
+      if (artifacts.value.schemaVersion !== SDP_SCHEMA_VERSION) errors.push('artifacts.json schemaVersion must be 1');
+      if (!Array.isArray(artifacts.value.artifacts)) errors.push('artifacts.json artifacts must be an array');
+    }
+  }
+
+  errors.push(...validateJsonLinesFile(eventsPath));
+
+  return { drifted: errors.length > 0, reason: errors.length > 0 ? 'runtime-state-drift' : 'ok', baseProfile: expectedProfile, errors };
+};
+
+const recordRepairFailure = (baseProfile, context, errors) => {
+  try {
+    const failurePath = path.join(baseProfile.runtimeRoot, 'quarantine', `repair-failure-${Date.now()}-${safePathSegment(context.sessionID)}.json`);
+    writeJsonAtomic(failurePath, { timestamp: nowIso(), sessionID: context.sessionID, errors });
+    return failurePath;
+  } catch {
+    return null;
+  }
+};
+
+const recordRepairFailureIfSafe = (baseProfile, context, errors) => {
+  const parentErrors = validateRuntimeParentPaths({
+    runtimeRoot: baseProfile.runtimeRoot,
+    stateRoot: baseProfile.stateRoot,
+    quarantineRoot: path.join(baseProfile.runtimeRoot, 'quarantine')
+  });
+  if (parentErrors.length > 0) return null;
+  return recordRepairFailure(baseProfile, context, errors);
+};
+
+export const autoRepairRuntimeState = ({ configDir, context }) => {
+  if (!context?.sessionID) return { ok: true, repaired: false, reason: 'missing-session-id' };
+  const inspection = inspectRuntimeDrift(configDir, context);
+  if (!inspection.drifted) return { ok: true, repaired: false, reason: inspection.reason };
+
+  const stateDir = inspection.baseProfile.stateDir;
+  const stateRoot = inspection.baseProfile.stateRoot;
+  const quarantineRoot = path.join(inspection.baseProfile.runtimeRoot, 'quarantine');
+  const repairId = `${Date.now()}-${process.pid}-${safePathSegment(context.sessionID)}-${crypto.randomBytes(4).toString('hex')}`;
+  const quarantineDir = path.join(quarantineRoot, repairId);
+  const repairTempDir = path.join(quarantineRoot, `repairing-${repairId}`);
+  const parentPathErrors = validateRuntimeParentPaths({ runtimeRoot: inspection.baseProfile.runtimeRoot, stateRoot, quarantineRoot });
+  if (parentPathErrors.length > 0) {
+    return { ok: false, repaired: false, stateDir, quarantineDir, errors: [...inspection.errors, ...parentPathErrors] };
+  }
+  const containmentErrors = validateRuntimePathContainment({ ...inspection.baseProfile, quarantineRoot, quarantineDir, repairTempDir });
+  if (!stateDir || containmentErrors.length > 0) {
+    const errors = [...inspection.errors, ...(containmentErrors.length > 0 ? containmentErrors : ['repair path is outside SuperDuperPowers runtime state'])];
+    const failurePath = recordRepairFailureIfSafe(inspection.baseProfile, context, errors);
+    return { ok: false, repaired: false, stateDir, quarantineDir, failurePath, errors };
+  }
+  let movedToQuarantine = false;
+  let createdReplacementState = false;
+  const repairMarker = `.repairing-${repairId}`;
+  const repairMarkerPath = path.join(stateDir, repairMarker);
+  try {
+    let stateDirExists = false;
+    try {
+      fs.lstatSync(stateDir);
+      stateDirExists = true;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    if (stateDirExists) {
+      fs.mkdirSync(path.dirname(quarantineDir), { recursive: true });
+      fs.renameSync(stateDir, quarantineDir);
+      movedToQuarantine = true;
+    }
+    const repairedProfile = { ...inspection.baseProfile, route: null, updatedAt: nowIso() };
+    writeJsonAtomic(path.join(repairTempDir, 'profile.json'), repairedProfile);
+    writeJsonAtomic(path.join(repairTempDir, 'artifacts.json'), { schemaVersion: SDP_SCHEMA_VERSION, artifacts: [] });
+    appendEvent(repairTempDir, { type: 'runtime.autoRepair', messageID: context.messageID || null, errors: inspection.errors, quarantineDir });
+    fs.mkdirSync(stateDir);
+    createdReplacementState = true;
+    fs.writeFileSync(repairMarkerPath, repairId, { flag: 'wx' });
+    for (const file of ['profile.json', 'artifacts.json', 'events.jsonl']) {
+      fs.copyFileSync(path.join(repairTempDir, file), path.join(stateDir, file), fs.constants.COPYFILE_EXCL);
+    }
+    fs.rmSync(repairMarkerPath, { force: true });
+    fs.rmSync(repairTempDir, { recursive: true, force: true });
+    return { ok: true, repaired: true, stateDir, quarantineDir, errors: inspection.errors };
+  } catch (error) {
+    const errors = [...inspection.errors, error.message];
+    let restored = false;
+    try {
+      if (fs.existsSync(repairTempDir)) fs.rmSync(repairTempDir, { recursive: true, force: true });
+      if (createdReplacementState && fs.existsSync(stateDir) && !fs.existsSync(repairMarkerPath) && fs.readdirSync(stateDir).length === 0) {
+        fs.rmSync(stateDir, { recursive: true, force: true });
+      }
+      if (createdReplacementState && fs.existsSync(repairMarkerPath) && fs.readFileSync(repairMarkerPath, 'utf8') === repairId) {
+        const entries = fs.readdirSync(stateDir);
+        const expectedEntries = new Set([repairMarker, 'profile.json', 'artifacts.json', 'events.jsonl']);
+        if (entries.every((entry) => expectedEntries.has(entry))) {
+          fs.rmSync(stateDir, { recursive: true, force: true });
+        }
+      }
+      if (movedToQuarantine && !fs.existsSync(stateDir) && fs.existsSync(quarantineDir)) {
+        fs.renameSync(quarantineDir, stateDir);
+        restored = true;
+      }
+    } catch (restoreError) {
+      errors.push(`failed to restore quarantined state: ${restoreError.message}`);
+    }
+    const failurePath = recordRepairFailure(inspection.baseProfile, context, errors);
+    return { ok: false, repaired: false, stateDir, quarantineDir, restored, failurePath, errors };
+  }
 };
 
 const ensureTrailingNewline = (content) => content.endsWith('\n') ? content : `${content}\n`;
@@ -374,6 +675,27 @@ const createProfileTool = (configDir) => tool({
     if (!preValidation.ok) return JSON.stringify({ ok: false, errors: preValidation.errors }, null, 2);
     const baseProfile = buildDefaultProfile({ configDir, context, profile: profileInputOperation ? incomingProfile : {} });
     const stateDir = baseProfile.stateDir;
+    const containmentErrors = validateRuntimePathContainment(baseProfile);
+    if (containmentErrors.length > 0) return JSON.stringify({ ok: false, errors: containmentErrors }, null, 2);
+    const parentPathErrors = validateRuntimeParentPaths({
+      runtimeRoot: baseProfile.runtimeRoot,
+      stateRoot: baseProfile.stateRoot,
+      quarantineRoot: path.join(baseProfile.runtimeRoot, 'quarantine')
+    });
+    if (parentPathErrors.length > 0) return JSON.stringify({ ok: false, errors: parentPathErrors }, null, 2);
+    if (stateDir) {
+      try {
+        const stateDirStat = fs.lstatSync(stateDir);
+        if (stateDirStat.isSymbolicLink()) return JSON.stringify({ ok: false, errors: ['stateDir must not be a symlink'] }, null, 2);
+        if (!stateDirStat.isDirectory()) return JSON.stringify({ ok: false, errors: ['stateDir must be a directory'] }, null, 2);
+      } catch (error) {
+        if (error.code !== 'ENOENT') return JSON.stringify({ ok: false, errors: [`invalid stateDir: ${error.message}`] }, null, 2);
+      }
+    }
+    if (stateDir && ['set', 'merge'].includes(operation)) {
+      const eventTargetErrors = validateEventAppendTarget(stateDir);
+      if (eventTargetErrors.length > 0) return JSON.stringify({ ok: false, errors: eventTargetErrors }, null, 2);
+    }
 
     if (!context.sessionID && ['set', 'merge', 'clear', 'repair'].includes(operation)) {
       return JSON.stringify({ ok: false, reason: 'missing-session-id', unsavedProfile: baseProfile }, null, 2);
@@ -381,8 +703,9 @@ const createProfileTool = (configDir) => tool({
 
     const profilePath = stateDir ? path.join(stateDir, 'profile.json') : null;
     const readExisting = () => {
-      if (!profilePath || !fs.existsSync(profilePath)) return null;
-      const parsed = readJsonFile(profilePath);
+      if (!profilePath) return null;
+      const parsed = readProfileJsonSafe(profilePath);
+      if (!parsed.value && parsed.errors.length === 0) return null;
       if (parsed.errors.length > 0) return { corrupted: true, errors: parsed.errors };
       return parsed.value;
     };
@@ -547,8 +870,136 @@ const createBranchContextTool = () => tool({
   }
 });
 
-export const createSdpTools = ({ configDir }) => ({
+const createDoctorTool = (configDir, packageInfo, getRegistrationReport) => tool({
+  description: 'Diagnose SuperDuperPowers OpenCode plugin installation and runtime state without modifying files.',
+  args: {
+    operation: tool.schema.enum(['check'])
+  },
+  async execute(args, context) {
+    const checks = [];
+    const directory = context.directory || context.worktree || process.cwd();
+    const paths = getRuntimePaths(configDir, context.sessionID, directory);
+    const registration = getRegistrationReport() || null;
+    const packageRoot = packageInfo.packageRoot || null;
+    const skillsDir = packageInfo.skillsDir || null;
+    const agentsDir = packageInfo.agentsDir || null;
+
+    doctorCheck(checks, 'operation', args.operation === 'check' ? 'ok' : 'error', `operation=${args.operation}`);
+    doctorCheck(checks, 'package-root', packageRoot && dirExists(packageRoot) ? 'ok' : 'error', packageRoot ? `package root ${packageRoot}` : 'package root unavailable', { packageRoot });
+    doctorCheck(checks, 'skills-dir', skillsDir && dirExists(skillsDir) ? 'ok' : 'error', skillsDir ? `skills dir ${skillsDir}` : 'skills dir unavailable', { skillsDir });
+
+    const skillsPathStatus = registration?.skillsPath?.status || null;
+    doctorCheck(
+      checks,
+      'skills-registration',
+      !registration ? 'warning' : (skillsPathStatus ? 'ok' : 'error'),
+      !registration ? 'registration report unavailable until config hook runs' : (skillsPathStatus ? `skills path ${skillsPathStatus}` : 'skills path registration missing'),
+      { skillsPath: registration?.skillsPath || null }
+    );
+
+    const requiredSkills = ['using-superpowers', 'brainstorming', 'writing-plans', 'executing-plans', 'subagent-driven-development', 'requesting-spec-review', 'requesting-code-review', 'verification-before-completion'];
+    const missingSkills = requiredSkills.filter((name) => !skillsDir || !fileExists(path.join(skillsDir, name, 'SKILL.md')));
+    doctorCheck(checks, 'required-skills', missingSkills.length === 0 ? 'ok' : 'error', missingSkills.length === 0 ? 'required skills exist' : `missing skills: ${missingSkills.join(', ')}`, { requiredSkills, missingSkills });
+
+    const requiredAgents = ['code-reviewer', 'spec-reviewer', 'lite-code-reviewer', 'lite-spec-reviewer'];
+    const missingAgents = requiredAgents.filter((name) => !agentsDir || !fileExists(path.join(agentsDir, `${name}.md`)));
+    doctorCheck(checks, 'reviewer-agents', missingAgents.length === 0 ? 'ok' : 'error', missingAgents.length === 0 ? 'reviewer agents exist' : `missing agents: ${missingAgents.join(', ')}`, { requiredAgents, missingAgents });
+
+    const registeredAgents = registration?.agents || {};
+    const missingAgentRegistrations = registration ? requiredAgents.filter((name) => !registeredAgents[name]) : [];
+    doctorCheck(
+      checks,
+      'agent-registration',
+      !registration ? 'warning' : (missingAgentRegistrations.length === 0 ? 'ok' : 'error'),
+      !registration ? 'registration report unavailable until config hook runs' : (missingAgentRegistrations.length === 0 ? 'reviewer agents registered or preserved' : `missing reviewer agent registrations: ${missingAgentRegistrations.join(', ')}`),
+      { agents: registeredAgents, missingAgentRegistrations }
+    );
+
+    const expectedCommands = expectedCommandNames();
+    const registeredCommands = registration?.commands || {};
+    const missingCommands = registration ? expectedCommands.filter((name) => !registeredCommands[name]) : [];
+    doctorCheck(checks, 'commands', !registration ? 'warning' : (missingCommands.length === 0 ? 'ok' : 'error'), !registration ? 'registration report unavailable until config hook runs' : (missingCommands.length === 0 ? 'expected commands registered or preserved' : `missing command registrations: ${missingCommands.join(', ')}`), { commands: registeredCommands, missingCommands });
+
+    const preservedCommands = Object.entries(registeredCommands).filter(([, status]) => status === 'preserved').map(([name]) => name);
+    if (preservedCommands.length > 0) {
+      doctorCheck(checks, 'command-overrides', 'warning', `user-defined commands preserved: ${preservedCommands.join(', ')}`, { preservedCommands });
+    }
+
+    const tools = ['sdp_profile', 'sdp_setup_hygiene', 'sdp_branch_context', 'sdp_doctor'];
+    doctorCheck(checks, 'tools', 'ok', `expected tools exposed: ${tools.join(', ')}`, { tools });
+
+    const runtimeParentErrors = validateRuntimeParentPaths(paths);
+    doctorCheck(checks, 'runtime-parents', runtimeParentErrors.length === 0 ? 'ok' : 'error', runtimeParentErrors.length === 0 ? 'runtime parent paths are safe' : runtimeParentErrors.join('; '), { errors: runtimeParentErrors });
+
+    const containmentErrors = validateRuntimePathContainment(paths);
+    doctorCheck(checks, 'runtime-containment', containmentErrors.length === 0 ? 'ok' : 'error', containmentErrors.length === 0 ? 'runtime state paths stay inside owned roots' : containmentErrors.join('; '), { errors: containmentErrors });
+
+    const profilePath = paths.stateDir ? path.join(paths.stateDir, 'profile.json') : null;
+    const stateDirErrors = [];
+    if (runtimeParentErrors.length > 0 || containmentErrors.length > 0) {
+      stateDirErrors.push('stateDir not inspected because runtime paths are unsafe');
+    } else if (paths.stateDir) {
+      try {
+        const stateDirStat = fs.lstatSync(paths.stateDir);
+        if (stateDirStat.isSymbolicLink()) stateDirErrors.push('stateDir must not be a symlink');
+        if (!stateDirStat.isDirectory()) stateDirErrors.push('stateDir must be a directory');
+      } catch (error) {
+        if (error.code !== 'ENOENT') stateDirErrors.push(`invalid stateDir: ${error.message}`);
+      }
+    }
+    doctorCheck(checks, 'state-dir', stateDirErrors.length === 0 ? 'ok' : 'error', stateDirErrors.length === 0 ? 'active stateDir is safe to inspect' : stateDirErrors.join('; '), { stateDir: paths.stateDir, errors: stateDirErrors });
+
+    if (stateDirErrors.length > 0) {
+      doctorCheck(checks, 'profile', 'error', 'active profile not read because stateDir is unsafe', { profilePath, errors: stateDirErrors });
+    } else if (profilePath) {
+      const parsed = readProfileJsonSafe(profilePath);
+      if (!parsed.value && parsed.errors.length === 0) {
+        doctorCheck(checks, 'profile', 'warning', 'active profile has not been initialized', { profilePath });
+      } else if (parsed.errors.length > 0) {
+        doctorCheck(checks, 'profile', 'error', parsed.errors.join('; '), { profilePath, errors: parsed.errors });
+      } else {
+        const errors = [...validateProfile(parsed.value, { allowIncomplete: parsed.value?.route === null }).errors, ...validateRelatedStateFiles(paths.stateDir)];
+        doctorCheck(checks, 'profile', errors.length === 0 ? 'ok' : 'error', errors.length === 0 ? 'active profile validates' : errors.join('; '), { profilePath, errors });
+      }
+    } else {
+      doctorCheck(checks, 'profile', 'warning', 'active profile has not been initialized', { profilePath });
+    }
+
+    doctorCheck(checks, 'runtime-root', dirExists(paths.runtimeRoot) ? 'ok' : 'warning', dirExists(paths.runtimeRoot) ? `runtime root exists: ${paths.runtimeRoot}` : `runtime root not created yet: ${paths.runtimeRoot}`, { runtimeRoot: paths.runtimeRoot });
+
+    const legacyShim = path.join(configDir, 'plugins', 'superpowers.js');
+    doctorCheck(checks, 'legacy-shim', fileExists(legacyShim) ? 'warning' : 'ok', fileExists(legacyShim) ? `legacy shim exists: ${legacyShim}` : 'legacy superpowers.js shim not found', { legacyShim });
+
+    const configText = `${readTextSafe(path.join(configDir, 'opencode.json'))}\n${readTextSafe(path.join(configDir, 'opencode.jsonc'))}`;
+    const duplicateRisk = /superpowers\.js/.test(configText) || (/superduperpowers/.test(configText) && fileExists(legacyShim));
+    doctorCheck(checks, 'duplicate-plugin-risk', duplicateRisk ? 'warning' : 'ok', duplicateRisk ? 'possible mixed legacy/package plugin load detected' : 'no mixed legacy/package plugin risk detected from known files', { checkedConfigDir: configDir });
+
+    const hygiene = docsEntriesFor(directory, null);
+    const gitignore = readTextSafe(path.join(directory, '.gitignore')).split(/\r?\n/);
+    const ignore = readTextSafe(path.join(directory, '.ignore')).split(/\r?\n/);
+    const missingHygiene = {
+      gitignore: hygiene.entries.gitignore.filter((entry) => !gitignore.includes(entry)),
+      ignore: hygiene.entries.ignore.filter((entry) => !ignore.includes(entry))
+    };
+    doctorCheck(checks, 'generated-doc-hygiene', missingHygiene.gitignore.length === 0 && missingHygiene.ignore.length === 0 ? 'ok' : 'warning', missingHygiene.gitignore.length === 0 && missingHygiene.ignore.length === 0 ? 'generated-doc hygiene entries are present' : 'generated-doc hygiene entries are missing', { docsRoot: hygiene.docsRoot, missing: missingHygiene });
+
+    const quarantines = runtimeParentErrors.length === 0 && dirExists(paths.quarantineRoot) ? fs.readdirSync(paths.quarantineRoot).filter(Boolean) : [];
+    const repairFailures = quarantines.filter((entry) => entry.startsWith('repair-failure-'));
+    doctorCheck(
+      checks,
+      'repair-history',
+      runtimeParentErrors.length > 0 ? 'error' : (repairFailures.length > 0 ? 'error' : (quarantines.length === 0 ? 'ok' : 'warning')),
+      runtimeParentErrors.length > 0 ? 'repair history not read because runtime parent paths are unsafe' : (repairFailures.length > 0 ? `failed automatic repairs found: ${repairFailures.length}` : (quarantines.length === 0 ? 'no quarantined runtime state found' : `quarantined runtime state entries: ${quarantines.length}`)),
+      { quarantineRoot: paths.quarantineRoot, quarantines, repairFailures }
+    );
+
+    return JSON.stringify(summarizeDoctor(checks), null, 2);
+  }
+});
+
+export const createSdpTools = ({ configDir, packageInfo = {}, getRegistrationReport = () => null }) => ({
   sdp_profile: createProfileTool(configDir),
   sdp_setup_hygiene: createSetupHygieneTool(),
-  sdp_branch_context: createBranchContextTool()
+  sdp_branch_context: createBranchContextTool(),
+  sdp_doctor: createDoctorTool(configDir, packageInfo, getRegistrationReport)
 });

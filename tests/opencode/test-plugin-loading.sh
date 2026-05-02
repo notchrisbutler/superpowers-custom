@@ -129,6 +129,18 @@ for (const name of ['code-reviewer', 'spec-reviewer', 'lite-code-reviewer', 'lit
   if (agent.permission?.todowrite !== 'deny') throw new Error(`${name} can mutate todos`);
 }
 
+const expectedCommands = ['sdp', 'superduperpowers', 'superpowers', 'brainstorm', 'quick-flow', 'write-plan', 'execute-plan', 'sdp-status', 'sdp-profile', 'sdp-cleanup'];
+for (const name of expectedCommands) {
+  const command = config.command?.[name];
+  if (!command) throw new Error(`missing command ${name}`);
+  if (!command.template) throw new Error(`${name} command is missing template`);
+  if (!command.description) throw new Error(`${name} command is missing description`);
+}
+if (config.command['sdp-status'].template.includes('sdp_profile cleanup')) throw new Error('sdp-status should use diagnostics, not cleanup');
+if (!config.command.sdp.template.includes('Full Brainstorming')) throw new Error('sdp command does not route choices');
+if (!config.command['quick-flow'].template.includes('Keep the work lightweight')) throw new Error('quick-flow command does not route quick flow');
+if (config.command['sdp-verify']) throw new Error('unexpected sdp-verify command registered');
+
 console.log(Object.keys(config.agent).sort().join('\n'));
 NODE
 ) || {
@@ -155,8 +167,22 @@ console.log('user-defined agent preserved');
 NODE
 echo "  [PASS] User-defined agent preserved"
 
-# Test 8: Verify bootstrap text does not reference a hardcoded skills path
-echo "Test 8: Checking bootstrap does not advertise a wrong skills path..."
+# Test 8: Verify existing user-defined commands are preserved
+echo "Test 8: Checking user-defined command preservation..."
+node --input-type=module <<'NODE'
+const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
+const hooks = await SuperpowersPlugin({});
+const existing = { description: 'User sdp command', template: 'User-defined command' };
+const config = { command: { sdp: existing } };
+await hooks.config(config);
+if (config.command.sdp !== existing) throw new Error('user-defined sdp command was overwritten');
+if (!config.command.brainstorm) throw new Error('other bundled commands were not registered');
+console.log('user-defined command preserved');
+NODE
+echo "  [PASS] User-defined command preserved"
+
+# Test 9: Verify bootstrap text does not reference a hardcoded skills path
+echo "Test 9: Checking bootstrap does not advertise a wrong skills path..."
 if grep -q 'configDir}/skills/superpowers/' "$SUPERPOWERS_PLUGIN_FILE"; then
     echo "  [FAIL] Plugin still references old configDir skills path"
     exit 1
@@ -164,8 +190,8 @@ else
     echo "  [PASS] Plugin does not advertise a misleading skills path"
 fi
 
-# Test 9: Verify bootstrap transform injects once
-echo "Test 9: Checking bootstrap transform injection..."
+# Test 10: Verify bootstrap transform injects once
+echo "Test 10: Checking bootstrap transform injection..."
 node --input-type=module <<'NODE'
 const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
 const hooks = await SuperpowersPlugin({});
@@ -189,8 +215,57 @@ console.log('bootstrap injected once');
 NODE
 echo "  [PASS] Bootstrap transform injects once"
 
-# Test 10: Verify personal test skill was created
-echo "Test 10: Checking test fixtures..."
+# Test 11: Verify compaction hook appends context
+echo "Test 11: Checking compaction profile context injection..."
+node --input-type=module <<'NODE'
+import fs from 'fs';
+import path from 'path';
+
+const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
+const project = path.join(process.env.TEST_HOME, 'test-project');
+const hooks = await SuperpowersPlugin({ directory: project });
+const profileTool = hooks.tool.sdp_profile;
+const context = { sessionID: 'ses_compaction', messageID: 'msg_compaction', directory: project, worktree: project };
+const setResult = JSON.parse(await profileTool.execute({ operation: 'set', profile: { route: 'full-brainstorming' } }, context));
+if (!setResult.ok) throw new Error('profile setup failed');
+
+const output = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, output);
+if (output.context.length !== 1) throw new Error(`expected one compaction context entry, got ${output.context.length}`);
+if (!output.context[0].includes('SuperDuperPowers profile: route=full-brainstorming')) throw new Error('profile summary missing from compaction context');
+if ('messages' in output) throw new Error('compaction hook wrote output.messages');
+fs.writeFileSync(path.join(setResult.profile.stateDir, 'profile.json'), 'null\n');
+const nullOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, nullOutput);
+if (nullOutput.context.length !== 0) throw new Error('compaction should skip non-object profiles');
+fs.writeFileSync(path.join(setResult.profile.stateDir, 'profile.json'), '{not json\n');
+const corruptOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, corruptOutput);
+if (corruptOutput.context.length !== 0) throw new Error('compaction should skip corrupt profiles');
+const externalProfile = path.join(project, 'external-profile.json');
+fs.writeFileSync(externalProfile, JSON.stringify(setResult.profile, null, 2));
+fs.rmSync(path.join(setResult.profile.stateDir, 'profile.json'));
+fs.symlinkSync(externalProfile, path.join(setResult.profile.stateDir, 'profile.json'));
+const symlinkOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, symlinkOutput);
+if (symlinkOutput.context.length !== 0) throw new Error('compaction should skip symlink profiles');
+const externalStateDir = path.join(project, 'external-state-dir');
+fs.mkdirSync(externalStateDir, { recursive: true });
+fs.writeFileSync(path.join(externalStateDir, 'profile.json'), JSON.stringify(setResult.profile, null, 2));
+fs.rmSync(setResult.profile.stateDir, { recursive: true, force: true });
+fs.symlinkSync(externalStateDir, setResult.profile.stateDir, 'dir');
+const stateDirSymlinkOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, stateDirSymlinkOutput);
+if (stateDirSymlinkOutput.context.length !== 0) throw new Error('compaction should skip symlink stateDir');
+const traversalOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: '../escape' }, traversalOutput);
+if (traversalOutput.context.length !== 0) throw new Error('compaction should skip traversal session ids');
+console.log('compaction context injected');
+NODE
+echo "  [PASS] Compaction hook appends output.context"
+
+# Test 12: Verify personal test skill was created
+echo "Test 12: Checking test fixtures..."
 if [ -f "$OPENCODE_CONFIG_DIR/skills/personal-test/SKILL.md" ]; then
     echo "  [PASS] Personal test skill fixture created"
 else
