@@ -129,7 +129,7 @@ for (const name of ['code-reviewer', 'spec-reviewer', 'lite-code-reviewer', 'lit
   if (agent.permission?.todowrite !== 'deny') throw new Error(`${name} can mutate todos`);
 }
 
-const expectedCommands = ['sdp', 'superduperpowers', 'superpowers', 'brainstorm', 'write-plan', 'execute-plan', 'sdp-status', 'sdp-profile', 'sdp-cleanup'];
+const expectedCommands = ['sdp', 'superduperpowers', 'superpowers', 'brainstorm', 'quick-flow', 'write-plan', 'execute-plan', 'sdp-status', 'sdp-profile', 'sdp-cleanup'];
 for (const name of expectedCommands) {
   const command = config.command?.[name];
   if (!command) throw new Error(`missing command ${name}`);
@@ -138,6 +138,7 @@ for (const name of expectedCommands) {
 }
 if (config.command['sdp-status'].template.includes('sdp_profile cleanup')) throw new Error('sdp-status should use diagnostics, not cleanup');
 if (!config.command.sdp.template.includes('Full Brainstorming')) throw new Error('sdp command does not route choices');
+if (!config.command['quick-flow'].template.includes('Keep the work lightweight')) throw new Error('quick-flow command does not route quick flow');
 if (config.command['sdp-verify']) throw new Error('unexpected sdp-verify command registered');
 
 console.log(Object.keys(config.agent).sort().join('\n'));

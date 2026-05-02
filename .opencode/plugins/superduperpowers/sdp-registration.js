@@ -49,6 +49,10 @@ export const SDP_COMMANDS = Object.freeze({
     description: 'Start SuperDuperPowers brainstorming',
     template: 'Use SuperDuperPowers brainstorming for this request. Load the brainstorming skill and follow its approval gate before any implementation. Arguments: $ARGUMENTS'
   },
+  'quick-flow': {
+    description: 'Use SuperDuperPowers quick flow',
+    template: 'Use SuperDuperPowers quick flow for this request. Keep the work lightweight and bounded: gather only enough context, make the smallest correct change, run targeted validation when practical, and do not use full brainstorming, planning, or TDD unless the task escalates. Arguments: $ARGUMENTS'
+  },
   'write-plan': {
     description: 'Write a SuperDuperPowers implementation plan',
     template: 'Use the SuperDuperPowers writing-plans workflow to write a full implementation plan from the approved spec or design. Arguments: $ARGUMENTS'

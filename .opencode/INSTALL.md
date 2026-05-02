@@ -61,6 +61,7 @@ The plugin registers OpenCode TUI slash commands through `config.command`; no co
 - `/superduperpowers` - primary readable alias behavior for `/sdp`.
 - `/superpowers` - legacy compatibility alias behavior.
 - `/brainstorm` - start the full brainstorming workflow.
+- `/quick-flow` - use lightweight SuperDuperPowers guidance for bounded work.
 - `/write-plan` - write an implementation plan from an approved spec or design.
 - `/execute-plan` - execute an approved plan after execution choices are recorded.
 - `/sdp-status` - run read-only diagnostics through `sdp_doctor`.
