@@ -314,7 +314,14 @@ const writeJsonAtomic = (filePath, value) => {
 
 const appendEvent = (stateDir, event) => {
   fs.mkdirSync(stateDir, { recursive: true });
-  fs.appendFileSync(path.join(stateDir, 'events.jsonl'), `${JSON.stringify({ timestamp: nowIso(), ...event })}\n`);
+  const eventsPath = path.join(stateDir, 'events.jsonl');
+  const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND | (fs.constants.O_NOFOLLOW || 0);
+  const fd = fs.openSync(eventsPath, flags, 0o666);
+  try {
+    fs.writeSync(fd, `${JSON.stringify({ timestamp: nowIso(), ...event })}\n`);
+  } finally {
+    fs.closeSync(fd);
+  }
 };
 
 const readJsonFile = (filePath) => {
@@ -336,6 +343,12 @@ const inspectRuntimeStateFile = (filePath) => {
     if (error.code === 'ENOENT') return { exists: false, errors: [] };
     return { exists: false, errors: [`invalid ${path.basename(filePath)}: ${error.message}`] };
   }
+};
+
+const validateEventAppendTarget = (stateDir) => {
+  const eventsPath = path.join(stateDir, 'events.jsonl');
+  const inspection = inspectRuntimeStateFile(eventsPath);
+  return inspection.exists ? inspection.errors : [];
 };
 
 export const readProfileJsonSafe = (profilePath) => {
@@ -678,6 +691,10 @@ const createProfileTool = (configDir) => tool({
       } catch (error) {
         if (error.code !== 'ENOENT') return JSON.stringify({ ok: false, errors: [`invalid stateDir: ${error.message}`] }, null, 2);
       }
+    }
+    if (stateDir && ['set', 'merge'].includes(operation)) {
+      const eventTargetErrors = validateEventAppendTarget(stateDir);
+      if (eventTargetErrors.length > 0) return JSON.stringify({ ok: false, errors: eventTargetErrors }, null, 2);
     }
 
     if (!context.sessionID && ['set', 'merge', 'clear', 'repair'].includes(operation)) {

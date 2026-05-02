@@ -211,6 +211,19 @@ await hooks['chat.message']({ sessionID: 'ses_autorepair_file_symlink', messageI
 if (fs.lstatSync(path.join(fileSymlinkProfile.profile.stateDir, 'events.jsonl')).isSymbolicLink()) throw new Error('symlink events file was not replaced');
 if (fs.readFileSync(externalEvents, 'utf8') !== '{"external":true}\n') throw new Error('symlink events target was modified');
 
+const profileEventSymlinkContext = { sessionID: 'ses_profile_event_symlink', messageID: 'msg_profile_event_symlink', directory: project, worktree: project, agent: 'build' };
+const profileEventSymlink = JSON.parse(await hooks.tool.sdp_profile.execute({ operation: 'set', profile: { route: 'full-brainstorming' } }, profileEventSymlinkContext));
+if (!profileEventSymlink.ok) throw new Error('profile event symlink setup failed');
+const externalProfileEvents = path.join(process.env.TEST_HOME, 'external-profile-events.jsonl');
+fs.writeFileSync(externalProfileEvents, '{"external":true}\n');
+fs.rmSync(path.join(profileEventSymlink.profile.stateDir, 'events.jsonl'));
+fs.symlinkSync(externalProfileEvents, path.join(profileEventSymlink.profile.stateDir, 'events.jsonl'));
+const symlinkSet = JSON.parse(await hooks.tool.sdp_profile.execute({ operation: 'set', profile: { route: 'quick-implementation' } }, profileEventSymlinkContext));
+if (symlinkSet.ok) throw new Error('profile set accepted symlink events file');
+const symlinkMerge = JSON.parse(await hooks.tool.sdp_profile.execute({ operation: 'merge', updates: { testingIntensity: 'existing-tests-only' } }, profileEventSymlinkContext));
+if (symlinkMerge.ok) throw new Error('profile merge accepted symlink events file');
+if (fs.readFileSync(externalProfileEvents, 'utf8') !== '{"external":true}\n') throw new Error('profile event symlink target was modified');
+
 const profileSymlinkContext = { sessionID: 'ses_autorepair_profile_symlink', messageID: 'msg_profile_symlink', directory: project, worktree: project, agent: 'build' };
 const profileSymlinkProfile = JSON.parse(await hooks.tool.sdp_profile.execute({ operation: 'set', profile: { route: 'full-brainstorming' } }, profileSymlinkContext));
 if (!profileSymlinkProfile.ok) throw new Error('profile symlink setup failed');
