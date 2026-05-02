@@ -57,7 +57,7 @@ See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verifica
 - Grouped execution with flat, dependency-ordered task lists that stay readable in agent harnesses
 - Named reviewer agents: `spec-reviewer`, `code-reviewer`, `lite-spec-reviewer`, and `lite-code-reviewer`
 - Local-first finishing flow that prepares PR commands without pushing unless explicitly requested
-- Included OpenCode plugin entrypoint through `.opencode/plugins/superpowers.js`
+- Included OpenCode plugin entrypoint through `.opencode/plugins/superduperpowers.js`
 - Calendar release versioning in the form `YYYY.M.D`, with `YYYY.M.D-N` for additional same-day releases
 
 ---

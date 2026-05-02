@@ -15,6 +15,8 @@ Add the plugin to your OpenCode config, typically `opencode.json`:
 
 Start a fresh OpenCode session after changing plugin config so the package is resolved and loaded.
 
+If you previously tested a local shim named `superpowers.js` in your user OpenCode plugins directory, remove that stale shim before verifying this package. The included entrypoint is now `superduperpowers.js`; keeping both shims can make OpenCode load duplicate plugin copies.
+
 ## GitHub Backup Install
 
 If npm resolution is unavailable, use the GitHub repository directly:
@@ -41,7 +43,7 @@ Use an absolute path to the repository checkout. Restart OpenCode after changing
 
 ## What The Plugin Registers
 
-The OpenCode plugin entrypoint is `.opencode/plugins/superpowers.js`.
+The OpenCode plugin entrypoint is `.opencode/plugins/superduperpowers.js`.
 
 - It adds the packaged `skills/` directory to OpenCode skill discovery.
 - It registers reviewer subagents from `agents/` as named OpenCode subagents: `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer`.

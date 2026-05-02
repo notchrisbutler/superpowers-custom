@@ -13,7 +13,7 @@ source "$SCRIPT_DIR/setup.sh"
 # Trap to cleanup on exit
 trap cleanup_test_env EXIT
 
-plugin_link="$OPENCODE_CONFIG_DIR/plugins/superpowers.js"
+plugin_link="$OPENCODE_CONFIG_DIR/plugins/superduperpowers.js"
 package_json="$SUPERPOWERS_DIR/package.json"
 
 # Test 1: Verify package metadata and local plugin shim exist
@@ -73,7 +73,7 @@ import path from 'path';
 const packagePath = path.join(process.env.SUPERPOWERS_DIR, 'package.json');
 const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 if (pkg.name !== '@notchrisbutler/superduperpowers') throw new Error(`unexpected package name ${pkg.name}`);
-if (pkg.main !== '.opencode/plugins/superpowers.js') throw new Error(`unexpected main ${pkg.main}`);
+if (pkg.main !== '.opencode/plugins/superduperpowers.js') throw new Error(`unexpected main ${pkg.main}`);
 const mod = await import(path.join(process.env.SUPERPOWERS_DIR, pkg.main));
 if (!mod.SuperpowersPlugin) throw new Error('missing SuperpowersPlugin export');
 const hooks = await mod.SuperpowersPlugin({});

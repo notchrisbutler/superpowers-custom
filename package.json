@@ -2,7 +2,7 @@
   "name": "@notchrisbutler/superduperpowers",
   "version": "2026.5.1",
   "type": "module",
-  "main": ".opencode/plugins/superpowers.js",
+  "main": ".opencode/plugins/superduperpowers.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/notchrisbutler/superduperpowers"
@@ -22,7 +22,8 @@
     "agents/",
     "skills/",
     "assets/",
-    ".opencode/plugins/superpowers.js",
+    ".opencode/plugins/superduperpowers.js",
+    ".opencode/plugins/superduperpowers/",
     ".opencode/INSTALL.md",
     "AGENTS.md",
     "ACKNOWLEDGEMENTS.md",

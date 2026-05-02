@@ -23,7 +23,7 @@ When reviewing completed work, you will:
    - Evaluate code organization, naming conventions, and maintainability
    - Assess test coverage and quality of test implementations
    - Look for potential security vulnerabilities or performance issues
-   - Check user-facing product naming: prefer `SuperDuperPowers`; allow `superpowers:*`, `using-superpowers`, and `.opencode/plugins/superpowers.js` only as compatibility identifiers.
+   - Check user-facing product naming: prefer `SuperDuperPowers`; allow `superpowers:*`, `using-superpowers`, and `.opencode/plugins/superduperpowers.js` only as compatibility identifiers.
    - Check that implementation honors testing intensity and does not add obvious tests that only assert imported constants or implementation details.
    - Check that branch/worktree code does not perform hidden branch changes, pushes, merges, resets, or destructive cleanup.
 

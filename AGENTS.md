@@ -11,7 +11,7 @@ SuperDuperPowers is an alpha skills and reviewer-agents plugin. Keep changes foc
 - Do not add third-party dependencies unless they are essential for the included OpenCode plugin support.
 - Treat `skills/` and `agents/` as the canonical workflow sources.
 - Treat `skills/` and `agents/` as harness-agnostic workflow sources.
-- Treat `.opencode/plugins/superpowers.js`, `.opencode/INSTALL.md`, and package metadata as the only included harness adapter surface for now.
+- Treat `.opencode/plugins/superduperpowers.js`, `.opencode/plugins/superduperpowers/`, `.opencode/INSTALL.md`, and package metadata as the only included harness adapter surface for now.
 
 ## Install And Release Posture
 

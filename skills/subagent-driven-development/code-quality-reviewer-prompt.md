@@ -35,7 +35,7 @@ Generic worker or inline fallback prompt:
     - Whether units are decomposed so they can be understood and tested independently
     - Whether the implementation follows the file structure from the plan
     - Whether new or modified files became too large because of this change
-    - User-facing product naming: prefer `SuperDuperPowers`; allow `superpowers:*`, `using-superpowers`, and `.opencode/plugins/superpowers.js` only as compatibility identifiers
+    - User-facing product naming: prefer `SuperDuperPowers`; allow `superpowers:*`, `using-superpowers`, and `.opencode/plugins/superduperpowers.js` only as compatibility identifiers
     - Whether implementation honors testing intensity and avoids obvious tests that only assert imported constants or implementation details
     - Whether branch/worktree code avoids hidden branch changes, pushes, merges, resets, or destructive cleanup
 
