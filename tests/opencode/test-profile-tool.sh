@@ -39,8 +39,17 @@ const noSession = JSON.parse(await profileTool.execute({ operation: 'set', profi
 if (noSession.ok) throw new Error('write without sessionID unexpectedly succeeded');
 if (!noSession.unsavedProfile) throw new Error('missing unsavedProfile fallback');
 
+const missingRoute = JSON.parse(await profileTool.execute({ operation: 'set', profile: {} }, context));
+if (missingRoute.ok) throw new Error('profile set without route was accepted');
+
+const invalidDocsRoot = JSON.parse(await profileTool.execute({ operation: 'set', profile: { route: 'full-brainstorming', docsRoot: 123 } }, context));
+if (invalidDocsRoot.ok) throw new Error('non-string set docsRoot was accepted');
+
 const mergeResult = JSON.parse(await profileTool.execute({ operation: 'merge', updates: { executionMethod: 'inline' } }, context));
 if (mergeResult.profile.executionMethod !== 'inline') throw new Error('merge did not persist executionMethod');
+
+const invalidMergeDocsRoot = JSON.parse(await profileTool.execute({ operation: 'merge', updates: { docsRoot: {} } }, context));
+if (invalidMergeDocsRoot.ok) throw new Error('non-string merge docsRoot was accepted');
 
 const summaryResult = JSON.parse(await profileTool.execute({ operation: 'summary' }, context));
 if (!summaryResult.summary.includes('testingIntensity=major-behavior')) throw new Error('summary missing testing intensity');
@@ -59,6 +68,14 @@ if (invalid.ok) throw new Error('secret-like profile key was accepted');
 
 const unknown = JSON.parse(await profileTool.execute({ operation: 'merge', updates: { customField: true } }, context));
 if (unknown.ok) throw new Error('unknown profile field was accepted');
+
+fs.writeFileSync(profilePath, '{not json\n');
+const corruptValidation = JSON.parse(await profileTool.execute({ operation: 'validate' }, context));
+if (corruptValidation.ok) throw new Error('corrupt profile validated successfully');
+
+const repairResult = JSON.parse(await profileTool.execute({ operation: 'repair', profile: { route: 'full-brainstorming' } }, context));
+if (!repairResult.ok) throw new Error(`repair failed: ${JSON.stringify(repairResult)}`);
+if (!fs.existsSync(profilePath)) throw new Error('repair did not restore profile');
 
 const oldDir = path.join(process.env.OPENCODE_CONFIG_DIR, 'superduperpowers', 'state', 'ses_oldprofile');
 fs.mkdirSync(oldDir, { recursive: true });

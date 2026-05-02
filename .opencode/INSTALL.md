@@ -46,6 +46,8 @@ The OpenCode plugin entrypoint is `.opencode/plugins/superpowers.js`.
 - It adds the packaged `skills/` directory to OpenCode skill discovery.
 - It registers reviewer subagents from `agents/` as named OpenCode subagents: `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer`.
 - It injects the `using-superpowers` bootstrap into the first user message once per session so routing guidance is available without duplicating it on later turns.
+- Custom tools: `sdp_profile`, `sdp_setup_hygiene`, and `sdp_branch_context`.
+- User-level runtime state and default worktrees under `{OPENCODE_CONFIG_DIR}/superduperpowers/`.
 
 Bundled agents do not need to be copied into a project. The plugin registers the packaged agent definitions directly when it loads.
 
@@ -57,6 +59,9 @@ Skill discovery and bootstrap prompt:
 
 ```text
 Use the superpowers brainstorming skill.
+Use SuperDuperPowers brainstorming for this feature.
+Use superduperpowers quick flow for a small typo fix.
+Execute this approved plan with subagents using user-level worktrees.
 ```
 
 Expected: the `skill` tool can load skills from this package, the `using-superpowers` bootstrap is present once, and the agent follows the requested brainstorming workflow.
@@ -72,15 +77,15 @@ Expected: `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec
 Quick-flow prompt:
 
 ```text
-Using Superpowers quick flow, make a small README wording improvement.
+Using SuperDuperPowers quick flow, make a small README wording improvement.
 ```
 
 Expected: the agent gathers lightweight context, makes the bounded change, runs targeted validation when practical, and avoids full brainstorming, TDD, and planning unless the task escalates.
 
-No-Superpowers prompt:
+No-SuperDuperPowers prompt:
 
 ```text
-Fix a typo in README without using Superpowers.
+Fix a typo in README without using SuperDuperPowers.
 ```
 
-Expected: the agent does not load brainstorming, TDD, planning, or other Superpowers workflow skills for the no-Superpowers prompt.
+Expected: the agent does not load brainstorming, TDD, planning, or other SuperDuperPowers workflow skills for the no-SuperDuperPowers prompt.

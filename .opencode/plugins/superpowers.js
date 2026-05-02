@@ -148,6 +148,34 @@ const selectDocsRoot = (directory, override) => {
   return 'docs';
 };
 
+const allowedRouteValues = ['full-brainstorming', 'quick-implementation', 'none'];
+const allowedTestingIntensityValues = ['full-regression', 'major-behavior', 'existing-tests-only'];
+const nullableDecisionKeys = new Set(['route', 'executionMethod', 'executionStrategy']);
+const stringProfileInputKeys = new Set([
+  'createdAt',
+  'updatedAt',
+  'messageId',
+  'route',
+  'docsRoot',
+  'generatedDocsPolicy',
+  'workflowCommitPolicy',
+  'executionMethod',
+  'executionStrategy',
+  'branchPolicy',
+  'testingIntensity',
+  'questionPolicy',
+  'productName',
+  'programmaticName',
+  'skillNamespace',
+  'sdpDocsRoot',
+  'specsDir',
+  'plansDir',
+  'runtimeRoot',
+  'stateRoot',
+  'stateDir',
+  'worktreeRoot'
+]);
+
 const buildDefaultProfile = ({ configDir, context, profile = {} }) => {
   const directory = context.directory || context.worktree || process.cwd();
   const docsRoot = selectDocsRoot(directory, profile.docsRoot);
@@ -200,15 +228,15 @@ const hasSecretLikeKey = (value) => {
   return false;
 };
 
-const validateProfile = (profile) => {
+const validateProfile = (profile, { allowIncomplete = false } = {}) => {
   const errors = [];
   for (const key of Object.keys(profile)) {
     if (!SDP_PROFILE_KEYS.has(key)) errors.push(`unknown profile field: ${key}`);
   }
   if (profile.schemaVersion !== SDP_SCHEMA_VERSION) errors.push('schemaVersion must be 1');
   if (!profile.productName || profile.productName !== 'SuperDuperPowers') errors.push('productName must be SuperDuperPowers');
-  if (!['full-brainstorming', 'quick-implementation', 'none', null].includes(profile.route)) errors.push('invalid route');
-  if (!['full-regression', 'major-behavior', 'existing-tests-only'].includes(profile.testingIntensity)) errors.push('invalid testingIntensity');
+  if (!(allowIncomplete && profile.route === null) && !allowedRouteValues.includes(profile.route)) errors.push('invalid route');
+  if (!allowedTestingIntensityValues.includes(profile.testingIntensity)) errors.push('invalid testingIntensity');
   if (!['local-only'].includes(profile.generatedDocsPolicy)) errors.push('invalid generatedDocsPolicy');
   if (hasSecretLikeKey(profile)) errors.push('profile contains secret-like key');
   return { ok: errors.length === 0, errors };
@@ -218,10 +246,20 @@ const stableJson = (value) => JSON.stringify(value);
 
 const validateProfileInput = (value, { allowFull = false, comparisonProfile = null } = {}) => {
   const errors = [];
-  if (!value || typeof value !== 'object') return { ok: true, errors };
+  if (!value) return { ok: true, errors };
+  if (typeof value !== 'object' || Array.isArray(value)) return { ok: false, errors: ['profile input must be an object'] };
   const allowedKeys = allowFull ? SDP_PROFILE_KEYS : SDP_MUTABLE_PROFILE_KEYS;
   for (const key of Object.keys(value)) {
     if (!allowedKeys.has(key)) errors.push(`unsupported profile field: ${key}`);
+    if (stringProfileInputKeys.has(key) && value[key] !== null && typeof value[key] !== 'string') errors.push(`profile field must be a string: ${key}`);
+    if (nullableDecisionKeys.has(key) && value[key] === null) continue;
+    if (key === 'route' && value[key] !== undefined && !allowedRouteValues.includes(value[key])) errors.push('invalid route');
+    if (key === 'testingIntensity' && value[key] !== undefined && !allowedTestingIntensityValues.includes(value[key])) errors.push('invalid testingIntensity');
+    if (key === 'generatedDocsPolicy' && value[key] !== undefined && value[key] !== 'local-only') errors.push('invalid generatedDocsPolicy');
+    if (key === 'cleanupPolicy' && (typeof value[key] !== 'object' || value[key] === null || Array.isArray(value[key]))) errors.push('cleanupPolicy must be an object');
+    if (allowFull && key === 'schemaVersion' && value[key] !== SDP_SCHEMA_VERSION) errors.push('schemaVersion must be 1');
+    if (allowFull && key === 'invocationAliases' && !Array.isArray(value[key])) errors.push('invocationAliases must be an array');
+    if (allowFull && ['project', 'harness'].includes(key) && (typeof value[key] !== 'object' || value[key] === null || Array.isArray(value[key]))) errors.push(`${key} must be an object`);
     if (allowFull && comparisonProfile && !SDP_MUTABLE_PROFILE_KEYS.has(key) && !['updatedAt', 'messageId'].includes(key)) {
       if (stableJson(value[key]) !== stableJson(comparisonProfile[key])) errors.push(`profile field does not match active context: ${key}`);
     }
@@ -252,6 +290,48 @@ const writeJsonAtomic = (filePath, value) => {
 const appendEvent = (stateDir, event) => {
   fs.mkdirSync(stateDir, { recursive: true });
   fs.appendFileSync(path.join(stateDir, 'events.jsonl'), `${JSON.stringify({ timestamp: nowIso(), ...event })}\n`);
+};
+
+const readJsonFile = (filePath) => {
+  try {
+    return { value: JSON.parse(fs.readFileSync(filePath, 'utf8')), errors: [] };
+  } catch (error) {
+    return { value: null, errors: [`invalid JSON in ${path.basename(filePath)}: ${error.message}`] };
+  }
+};
+
+const validateRelatedStateFiles = (stateDir) => {
+  const errors = [];
+  if (!stateDir) return errors;
+
+  const artifactsPath = path.join(stateDir, 'artifacts.json');
+  if (!fs.existsSync(artifactsPath)) {
+    errors.push('missing artifacts.json');
+  } else {
+    const artifacts = readJsonFile(artifactsPath);
+    errors.push(...artifacts.errors);
+    if (artifacts.value) {
+      if (artifacts.value.schemaVersion !== SDP_SCHEMA_VERSION) errors.push('artifacts.json schemaVersion must be 1');
+      if (!Array.isArray(artifacts.value.artifacts)) errors.push('artifacts.json artifacts must be an array');
+    }
+  }
+
+  const eventsPath = path.join(stateDir, 'events.jsonl');
+  if (!fs.existsSync(eventsPath)) {
+    errors.push('missing events.jsonl');
+  } else {
+    const lines = fs.readFileSync(eventsPath, 'utf8').split(/\r?\n/).filter(Boolean);
+    lines.forEach((line, index) => {
+      try {
+        const event = JSON.parse(line);
+        if (!event || typeof event !== 'object' || Array.isArray(event)) errors.push(`events.jsonl line ${index + 1} must be an object`);
+      } catch (error) {
+        errors.push(`invalid JSON in events.jsonl line ${index + 1}: ${error.message}`);
+      }
+    });
+  }
+
+  return errors;
 };
 
 const ensureTrailingNewline = (content) => content.endsWith('\n') ? content : `${content}\n`;
@@ -418,13 +498,17 @@ ${toolMapping}
         description: 'Manage the active SuperDuperPowers workflow profile for this OpenCode session.',
         args: {
           operation: tool.schema.enum(['get', 'set', 'merge', 'summary', 'validate', 'repair', 'clear', 'cleanup']),
-          profile: tool.schema.record(tool.schema.any()).optional(),
-          updates: tool.schema.record(tool.schema.any()).optional(),
+          profile: tool.schema.record(tool.schema.string(), tool.schema.any()).optional(),
+          updates: tool.schema.record(tool.schema.string(), tool.schema.any()).optional(),
           retentionDays: tool.schema.number().int().positive().optional()
         },
         async execute(args, context) {
           const operation = args.operation;
-          const baseProfile = buildDefaultProfile({ configDir, context, profile: args.profile || {} });
+          const incomingProfile = args.profile || {};
+          const profileInputOperation = ['set', 'repair'].includes(operation);
+          const preValidation = profileInputOperation ? validateProfileInput(incomingProfile, { allowFull: true }) : { ok: true, errors: [] };
+          if (!preValidation.ok) return JSON.stringify({ ok: false, errors: preValidation.errors }, null, 2);
+          const baseProfile = buildDefaultProfile({ configDir, context, profile: profileInputOperation ? incomingProfile : {} });
           const stateDir = baseProfile.stateDir;
 
           if (!context.sessionID && ['set', 'merge', 'clear', 'repair'].includes(operation)) {
@@ -434,16 +518,19 @@ ${toolMapping}
           const profilePath = stateDir ? path.join(stateDir, 'profile.json') : null;
           const readExisting = () => {
             if (!profilePath || !fs.existsSync(profilePath)) return null;
-            return JSON.parse(fs.readFileSync(profilePath, 'utf8'));
+            const parsed = readJsonFile(profilePath);
+            if (parsed.errors.length > 0) return { corrupted: true, errors: parsed.errors };
+            return parsed.value;
           };
 
           if (operation === 'get') {
             const existing = readExisting();
+            if (existing?.corrupted) return JSON.stringify({ ok: false, reason: 'corrupt-profile', errors: existing.errors }, null, 2);
             return JSON.stringify({ ok: true, profile: existing || baseProfile }, null, 2);
           }
 
           if (operation === 'set') {
-            const profile = buildDefaultProfile({ configDir, context, profile: args.profile || {} });
+            const profile = buildDefaultProfile({ configDir, context, profile: incomingProfile });
             const inputValidation = validateProfileInput(args.profile || {}, { allowFull: true, comparisonProfile: profile });
             if (!inputValidation.ok) return JSON.stringify({ ok: false, errors: inputValidation.errors }, null, 2);
             const validation = validateProfile(profile);
@@ -458,13 +545,15 @@ ${toolMapping}
             const inputValidation = validateProfileInput(args.updates || {});
             if (!inputValidation.ok) return JSON.stringify({ ok: false, errors: inputValidation.errors }, null, 2);
             const existing = readExisting() || baseProfile;
+            if (existing?.corrupted) return JSON.stringify({ ok: false, reason: 'corrupt-profile', errors: existing.errors }, null, 2);
             const updates = args.updates || {};
+            const docsRoot = typeof updates.docsRoot === 'string' ? updates.docsRoot.replace(/\/$/, '') : null;
             const profile = {
               ...existing,
               ...updates,
-              sdpDocsRoot: updates.docsRoot ? `${updates.docsRoot.replace(/\/$/, '')}/superduperpowers` : existing.sdpDocsRoot,
-              specsDir: updates.docsRoot ? `${updates.docsRoot.replace(/\/$/, '')}/superduperpowers/specs` : existing.specsDir,
-              plansDir: updates.docsRoot ? `${updates.docsRoot.replace(/\/$/, '')}/superduperpowers/plans` : existing.plansDir,
+              sdpDocsRoot: docsRoot ? `${docsRoot}/superduperpowers` : existing.sdpDocsRoot,
+              specsDir: docsRoot ? `${docsRoot}/superduperpowers/specs` : existing.specsDir,
+              plansDir: docsRoot ? `${docsRoot}/superduperpowers/plans` : existing.plansDir,
               updatedAt: nowIso()
             };
             const validation = validateProfile(profile);
@@ -476,6 +565,7 @@ ${toolMapping}
 
           if (operation === 'summary') {
             const profile = readExisting() || baseProfile;
+            if (profile?.corrupted) return JSON.stringify({ ok: false, reason: 'corrupt-profile', errors: profile.errors }, null, 2);
             return JSON.stringify({
               ok: true,
               summary: profileSummaryText(profile),
@@ -484,9 +574,12 @@ ${toolMapping}
           }
 
           if (operation === 'validate') {
-            const profile = readExisting() || baseProfile;
-            const validation = validateProfile(profile);
-            return JSON.stringify({ ok: validation.ok, errors: validation.errors, profile }, null, 2);
+            const existing = readExisting();
+            if (existing?.corrupted) return JSON.stringify({ ok: false, errors: existing.errors, profile: null }, null, 2);
+            const profile = existing || baseProfile;
+            const errors = [...validateProfile(profile, { allowIncomplete: !existing }).errors];
+            if (existing) errors.push(...validateRelatedStateFiles(stateDir));
+            return JSON.stringify({ ok: errors.length === 0, errors, profile }, null, 2);
           }
 
           if (operation === 'clear') {
@@ -495,12 +588,15 @@ ${toolMapping}
           }
 
           if (operation === 'repair') {
+            const validation = validateProfile(baseProfile);
+            if (!validation.ok) return JSON.stringify({ ok: false, errors: validation.errors }, null, 2);
             const quarantineDir = path.join(baseProfile.runtimeRoot, 'quarantine', `${Date.now()}-${context.sessionID}`);
             if (stateDir && fs.existsSync(stateDir)) {
               fs.mkdirSync(path.dirname(quarantineDir), { recursive: true });
               fs.renameSync(stateDir, quarantineDir);
             }
             writeJsonAtomic(profilePath, baseProfile);
+            writeJsonAtomic(path.join(stateDir, 'artifacts.json'), { schemaVersion: SDP_SCHEMA_VERSION, artifacts: [] });
             appendEvent(stateDir, { type: 'profile.repair', quarantineDir });
             return JSON.stringify({ ok: true, profile: baseProfile, quarantineDir }, null, 2);
           }

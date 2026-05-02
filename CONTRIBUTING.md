@@ -8,7 +8,7 @@ Thanks for helping improve SuperDuperPowers.
 
 - Search existing issues first.
 - Include the harness name and version when reporting behavior.
-- Include the SuperDuperPowers version from `package.json` or `CHANGELOG.md`.
+- Include the SuperDuperPowers version from `package.json` or the relevant GitHub Release.
 - Keep reports focused on one bug, feature, or harness concern.
 
 ---

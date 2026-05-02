@@ -19,6 +19,12 @@ Read the active workflow profile when available. Inherit docs paths, generated-d
 
 Use `testingIntensity` to scale test requirements. `major-behavior` is the default: plan tests for important behavior and integration points, but avoid exhaustive or obvious tests.
 
+If testing intensity is missing before execution handoff, ask through the active harness's structured question tool and persist the answer before offering execution method choices:
+
+1. Full regression
+2. Major behavior only
+3. Existing tests only
+
 **Save plans to:** `{DOCS_ROOT}/superduperpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 - Generated plans are local-only by default. Do not commit or force-add the generated plan unless the user explicitly asks or repo instructions require it.

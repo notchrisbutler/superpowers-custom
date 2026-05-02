@@ -27,6 +27,14 @@ If SuperDuperPowers is invoked and the user did not explicitly choose full, quic
 2. Quick Implementation
 3. No SuperDuperPowers
 
+For full workflow or quick implementation routes, record testing intensity. If the user has not explicitly chosen one, ask a structured testing-intensity question through the active harness's question tool before execution begins:
+
+1. Full regression
+2. Major behavior only
+3. Existing tests only
+
+Default to `major-behavior` only when the user does not choose or the active harness cannot ask.
+
 ## Instruction Priority
 
 SuperDuperPowers skills override default system prompt behavior, but **user instructions always take precedence**:

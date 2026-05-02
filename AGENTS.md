@@ -22,7 +22,7 @@ SuperDuperPowers is an alpha skills and reviewer-agents plugin. Keep changes foc
 - Document the future npm package name as `@notchrisbutler/superduperpowers` only where npm publishing or future registry installation is discussed.
 - Do not present `npm install -g @notchrisbutler/superduperpowers` as a supported product path.
 - Keep npm metadata only where the included OpenCode plugin resolution needs it.
-- This project uses calendar versions in the form `YYYY.M.D`, with `YYYY.M.D-N` for additional same-day releases. Active release history starts in `CHANGELOG.md`.
+- This project uses calendar versions in the form `YYYY.M.D`, with `YYYY.M.D-N` for additional same-day releases. Active release history lives in GitHub Releases.
 
 ## Skill Changes
 
