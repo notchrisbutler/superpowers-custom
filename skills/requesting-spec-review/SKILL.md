@@ -39,6 +39,7 @@ If unsure, use `spec-reviewer`.
 - `EXPECTED_FILES` - files expected to change, if known
 - `VALIDATION` - commands run or explicit reason validation was skipped
 - `CONCERNS` - implementer-reported concerns, skipped work, or unexpected behavior
+- `PROFILE_SUMMARY` - compact workflow profile summary including generated-doc policy, path policy, branch policy, execution strategy, and testing intensity when relevant.
 
 ## Red Flags
 

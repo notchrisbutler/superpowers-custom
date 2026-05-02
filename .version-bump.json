@@ -4,7 +4,6 @@
   ],
   "audit": {
     "exclude": [
-      "CHANGELOG.md",
       "docs/superpowers",
       "docs/publishing.md",
       "node_modules",

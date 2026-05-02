@@ -42,15 +42,22 @@ digraph when_to_use {
 ## The Process
 
 1. Read the plan once.
-2. Extract task groups, tasks, dependencies, validation commands, and review policies.
-3. Replace any prior planning/brainstorming todos with one compact harness todo list.
-4. Execute each compact todo in dependency order.
-5. For each parent `Task N`, execute the plan-defined `Task N.M` subtasks and lite checkpoints.
-6. Run full task-scope spec review and lite task-scope code review at parent task boundaries.
-7. Commit the verified parent task scope locally when workflow commits are enabled.
-8. Run final full implementation review and validation across all tasks.
-9. Commit verified remaining changes locally when workflow commits are enabled.
-10. Invoke `superpowers:finishing-a-development-branch`, preserving whether execution happened on the current branch or in a temporary worktree/task branch.
+2. Read the active workflow profile before dispatching implementation work.
+3. If `executionStrategy` is missing, ask the execution-strategy question before dispatching subagents.
+4. After strategy is known, run branch preflight and invoke the selected setup skill before any implementation subagent dispatch: `using-git-worktrees` for `worktree`, `using-feature-branches` for `feature-branch`, or stop if the strategy is `hold`.
+5. Record the resulting branch/worktree context in the workflow profile, including execution method, execution strategy, parent/source branch, selected durable branch, task branch, worktree path, and original workspace when relevant.
+6. Pass a compact profile summary into implementer and reviewer prompts.
+7. Extract task groups, tasks, dependencies, validation commands, and review policies.
+8. Replace any prior planning/brainstorming todos with one compact harness todo list.
+9. Execute each compact todo in dependency order.
+10. For each parent `Task N`, execute the plan-defined `Task N.M` subtasks and lite checkpoints.
+11. Run full task-scope spec review and lite task-scope code review at parent task boundaries.
+12. Commit the verified parent task scope locally when workflow commits are enabled.
+13. Run final full implementation review and validation across all tasks.
+14. Commit verified remaining changes locally when workflow commits are enabled.
+15. Invoke `superpowers:finishing-a-development-branch`, preserving whether execution happened on the current branch or in a temporary worktree/task branch.
+
+Subagents honor the profile's testing intensity. For `major-behavior`, they test important behavior and integration points without creating exhaustive or obvious tests.
 
 ## Todo Status Discipline
 
@@ -145,7 +152,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 ```markdown
 You: I'm using Subagent-Driven Development to execute this plan.
 
-[Read plan file once: docs/superpowers/plans/feature-plan.md]
+[Read plan file once: {DOCS_ROOT}/superduperpowers/plans/feature-plan.md]
 [Extract groups and tasks with full text and context]
 [Create compact harness todos with setup, one visible todo per parent Task N scope, Review, and Finalize]
 
@@ -194,6 +201,8 @@ Finalize: invoke finishing-a-development-branch
 
 **Required workflow skills:**
 - **superpowers:writing-plans** - Creates the plan this skill executes
+- **superpowers:using-feature-branches** - Required setup for feature-branch execution before dispatch
+- **superpowers:using-git-worktrees** - Required setup for worktree execution before dispatch
 - **superpowers:requesting-spec-review** - Spec compliance review routing for lite and full spec reviews
 - **superpowers:requesting-code-review** - Code review guidance for full code reviews
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks

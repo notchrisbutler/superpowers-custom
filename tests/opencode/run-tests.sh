@@ -59,6 +59,10 @@ done
 # List of tests to run (no external dependencies)
 tests=(
     "test-plugin-loading.sh"
+    "test-profile-tool.sh"
+    "test-setup-hygiene.sh"
+    "test-branch-context.sh"
+    "test-workflow-policy.sh"
 )
 
 # Integration tests (require OpenCode)

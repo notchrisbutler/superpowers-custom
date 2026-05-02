@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase or local conventions. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered task scopes with detailed subtasks. DRY. YAGNI. TDD. Include local commit steps at the approved plan and task-scope boundaries when workflow commits are enabled.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase or local conventions. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as grouped, dependency-ordered task scopes with detailed subtasks. DRY. YAGNI. Use the workflow profile's testing intensity to scale test requirements. Include local commit steps at verified implementation task-scope boundaries when workflow commits are enabled.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -15,9 +15,19 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** Prefer a dedicated worktree when the user wants isolated execution. If the user explicitly directs work to happen on the current branch, write the plan for current-branch execution and do not assume worktree setup or cleanup.
 
-**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+Read the active workflow profile when available. Inherit docs paths, generated-doc policy, branch policy, workflow commit policy, and testing intensity. If no profile tool exists, carry these decisions explicitly in the plan header and execution handoff.
+
+Use `testingIntensity` to scale test requirements. `major-behavior` is the default: plan tests for important behavior and integration points, but avoid exhaustive or obvious tests.
+
+If testing intensity is missing before execution handoff, ask through the active harness's structured question tool and persist the answer before offering execution method choices:
+
+1. Full regression
+2. Major behavior only
+3. Existing tests only
+
+**Save plans to:** `{DOCS_ROOT}/superduperpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
-- If that path is ignored in the active repository, treat the plan as local-only unless the user chooses a trackable path or explicitly requests force-adding ignored docs.
+- Generated plans are local-only by default. Do not commit or force-add the generated plan unless the user explicitly asks or repo instructions require it.
 
 ## Scope Check
 
@@ -151,7 +161,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact file paths always
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
-- DRY, YAGNI, TDD, and local commits at approved plan and task-scope boundaries when workflow commits are enabled
+- DRY, YAGNI, testing-intensity-aware validation, and local commits at verified implementation task-scope boundaries when workflow commits are enabled
 - Conceptual groups and `Task N.M` subtasks belong in plan docs; harness todos should be compact, flat, and ordered by parent task dependency
 - Include an explicit review policy per group
 
@@ -177,24 +187,24 @@ After saving and self-reviewing the plan, ask the user to review it before execu
 
 Wait for the user's response. If they request changes, update the plan and re-run self-review. Only proceed to execution handoff once the user approves the written plan.
 
-When workflow commits are enabled, commit the approved plan locally before offering execution. This matches the design flow: approved spec commit, approved plan commit, then task-scope commits during execution. Do not push unless the user explicitly requests it.
+Generated plans are local-only by default. Do not commit or force-add the generated plan unless the user explicitly asks or repo instructions require it. After user approval, update the workflow profile or explicit handoff context with the approved plan path before offering execution choices.
 
 ## Execution Handoff
 
-After the user approves the plan and the plan commit gate is handled, offer execution choice:
+After the user approves the written plan, ask execution method through the active harness's structured question tool:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+1. Subagent Driven Development
+2. Inline Execution, all in the main agent with no subagents
+3. Hold off on implementing for now
 
-**1. Subagent-Driven (recommended)** - I execute compact parent task scopes with plan-defined subtasks, lite task checkpoints, task-scope reviews, and final full reviews
+If the user chooses Hold off, record `executionMethod: hold` and stop cleanly.
 
-**2. Inline Execution** - Execute compact parent task scopes in this session using executing-plans, with plan-defined subtasks and checkpoints
+If the user chooses Inline Execution, record `executionMethod: inline`, run branch preflight, use `using-feature-branches` unless current-branch execution was explicitly approved, then invoke `executing-plans`.
 
-**Which approach?"**
+If the user chooses Subagent Driven Development, record `executionMethod: subagent-driven`, then ask execution strategy through the structured question tool:
 
-**If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Compact, dependency-ordered harness todo list with parent `Task N` scopes, `Review`, and `Finalize`
+1. User-level worktree route using `using-git-worktrees`
+2. Feature branch route using `using-feature-branches`
+3. Hold off on implementing for now
 
-**If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
-- Compact, dependency-ordered harness todo list with parent `Task N` scopes, `Review`, and `Finalize`
+Only invoke execution skills after the profile contains the required execution choices and branch/setup preflight passes.

@@ -9,6 +9,11 @@
 #   bump-version.sh --check         Report current versions (detect drift)
 #   bump-version.sh --audit         Check + grep repo for old version strings
 #
+# Project versions use YYYY.M.D for the first release on a date and
+# YYYY.M.D-N for additional same-day releases. Git tags use the same raw
+# version string without a leading v; --next also detects legacy v-prefixed
+# tags during the transition.
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -109,7 +114,7 @@ next_version_for_today() {
     elif [[ "$version" =~ ^${today_re}-([1-9][0-9]*)$ ]]; then
       (( BASH_REMATCH[1] > max_suffix )) && max_suffix="${BASH_REMATCH[1]}"
     fi
-  done < <(git -C "$REPO_ROOT" tag --list "v${today}*")
+  done < <({ git -C "$REPO_ROOT" tag --list "${today}*"; git -C "$REPO_ROOT" tag --list "v${today}*"; } | sort -u)
 
   if (( max_suffix < 0 )); then
     printf '%s\n' "$today"
@@ -282,7 +287,7 @@ case "${1:-}" in
   --help|-h|"")
     echo "Usage: bump-version.sh --next | <new-version> | --check | --audit"
     echo ""
-    echo "  --next         Bump to today's next release version based on package.json and v* tags"
+    echo "  --next         Bump to today's next release version based on package.json and raw numeric tags"
     echo "  <new-version>  Bump all declared files to the given date version, e.g. 2026.4.30 or 2026.4.30-1"
     echo "  --check        Show current versions, detect drift"
     echo "  --audit        Check + scan repo for undeclared version references"

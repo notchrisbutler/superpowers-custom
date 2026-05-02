@@ -20,6 +20,10 @@ Generic worker or inline fallback prompt:
 
     [From implementer's report]
 
+    ## Workflow Profile Summary
+
+    [PROFILE_SUMMARY: generated-doc policy, path policy, branch policy, execution strategy, and testing intensity when relevant]
+
     ## CRITICAL: Do Not Trust the Report
 
     The implementer's report may be incomplete, inaccurate, or optimistic.
@@ -58,6 +62,10 @@ Generic worker or inline fallback prompt:
     **Validation evidence:**
     - Were required tests, commands, or manual validations run?
     - Treat missing validation as a spec issue when the plan required it.
+
+    **Workflow profile compliance when in scope:**
+    - Verify generated docs policy, docs path policy, branch policy, execution strategy, and testing intensity were followed when those requirements are part of the plan or profile summary.
+    - Flag user-facing `Superpowers` product naming unless it is a compatibility identifier such as `superpowers:*`, `using-superpowers`, a file path, plugin filename, or attribution/history reference.
 
     **Verify by reading code, not by trusting report.**
 

@@ -12,7 +12,7 @@ Run the default included-config test suite from the repository root:
 tests/opencode/run-tests.sh
 ```
 
-The default suite runs checks that do not require an installed OpenCode binary. It verifies plugin structure and metadata assumptions that should work in a development checkout.
+The default suite runs checks that do not require an installed OpenCode binary. It verifies plugin structure, profile tools, branch/setup tools, and static workflow policy assumptions that should work in a development checkout.
 
 Run integration tests when OpenCode is available locally:
 
@@ -42,8 +42,12 @@ tests/opencode/
 ├── run-tests.sh              # Main OpenCode test runner
 ├── setup.sh                  # Shared setup helpers
 ├── test-plugin-loading.sh    # Package and plugin structure checks
-├── test-priority.sh          # Integration test for skill priority resolution
-└── test-tools.sh             # Integration test for OpenCode skill tools
+├── test-profile-tool.sh       # Workflow profile tool contract checks
+├── test-setup-hygiene.sh      # Generated-doc ignore hygiene checks
+├── test-branch-context.sh     # Read-only branch safety checks
+├── test-workflow-policy.sh    # Static workflow text policy checks
+├── test-tools.sh              # Integration test for OpenCode skill tools
+└── test-duplicate-skills.sh   # Integration duplicate skill behavior
 ```
 
 ## Requirements
@@ -67,7 +71,7 @@ Run the integration suite when the change affects runtime OpenCode behavior:
 tests/opencode/run-tests.sh --integration
 ```
 
-Runtime behavior includes skill discovery, the `using-superpowers` bootstrap, reviewer agent registration, tool priority handling, and plugin loading inside OpenCode.
+Runtime behavior includes skill discovery, the `using-superpowers` bootstrap, reviewer agent registration, custom workflow tools, tool priority handling, and plugin loading inside OpenCode.
 
 ## Manual Verification Prompts
 
@@ -78,8 +82,9 @@ Verify these behaviors:
 - Skills from `skills/` are discoverable through the OpenCode `skill` tool.
 - Reviewer agents from `agents/` are available as named OpenCode subagent types.
 - The `using-superpowers` bootstrap is injected once per session.
+- Workflow profile, setup hygiene, branch context, and static policy checks pass without a live OpenCode model.
 - Quick flow stays lightweight for bounded edits.
-- No-Superpowers requests avoid loading workflow skills.
+- No-SuperDuperPowers requests avoid loading workflow skills.
 
 ## Writing Or Updating Tests
 
@@ -93,6 +98,6 @@ Verify these behaviors:
 
 If skills are not discovered, verify the plugin is installed from the expected GitHub package source or `git+file` checkout path and restart OpenCode.
 
-If reviewer subagents are missing, check `.opencode/plugins/superpowers.js` and confirm it registers the packaged definitions from `agents/`.
+If reviewer subagents are missing, check `.opencode/plugins/superduperpowers.js` and confirm it registers the packaged definitions from `agents/`.
 
 If integration tests fail before running assertions, confirm OpenCode is installed and available on `PATH`.

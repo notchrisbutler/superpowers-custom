@@ -13,7 +13,9 @@ If the active harness does not support subagents or worker dispatch, use `execut
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** Tell the user that Superpowers works much better with access to subagents. The quality of its work will be significantly higher when the active harness supports subagent dispatch. If subagents are available, use superpowers:subagent-driven-development instead of this skill.
+**Note:** Tell the user that SuperDuperPowers works much better with access to subagents. The quality of its work will be significantly higher when the active harness supports subagent dispatch. If subagents are available, use superpowers:subagent-driven-development instead of this skill.
+
+Before inline execution, read the workflow profile. Run branch preflight. Use `using-feature-branches` by default unless the profile records explicit current-branch approval. Honor `testingIntensity` exactly as the plan describes.
 
 ## The Process
 
@@ -92,6 +94,7 @@ After all tasks complete and verified:
 ## Integration
 
 **Required workflow skills:**
+- **superpowers:using-feature-branches** - Default setup for non-worktree inline execution unless the profile records explicit current-branch approval
 - **superpowers:using-git-worktrees** - Use before starting when work should be isolated; skip when the user explicitly directs execution on the current branch
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks

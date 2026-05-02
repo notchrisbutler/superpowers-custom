@@ -15,6 +15,7 @@ Check only:
 2. Obvious test or validation mismatch.
 3. Obvious local regression, dead code, accidental debug output, or unrelated file change.
 4. Whether the change should be escalated to full `code-reviewer` because it is larger or riskier than expected.
+5. Obvious product naming regression, testing-intensity mismatch, or unsafe hidden git operation.
 
 Do not request stylistic polish unless it is likely to cause confusion or defects. Do not perform architecture review.
 

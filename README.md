@@ -3,7 +3,7 @@
 **Harness-agnostic skills and reviewer agents for deliberate coding workflows**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2026.5.1-purple.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026.5.1--1-purple.svg)](https://github.com/notchrisbutler/superduperpowers/releases)
 [![OpenCode](https://img.shields.io/badge/OpenCode-plugin-111827.svg)](.opencode/INSTALL.md)
 
 SuperDuperPowers gives coding agents a practical workflow toolkit: brainstorm when the work is ambiguous, write plans when the scope is real, execute in grouped phases, review at meaningful checkpoints, and verify before claiming success.
@@ -49,12 +49,15 @@ See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verifica
 
 ## Features
 
-- Opt-in Superpowers routing with full flow, quick flow, and no-Superpowers modes
+- Opt-in SuperDuperPowers routing with full flow, quick flow, and no-SuperDuperPowers modes
+- Workflow profile tools for route, docs, execution, branch, and testing-intensity decisions
+- User-level OpenCode runtime state and default worktrees under `{OPENCODE_CONFIG_DIR}/superduperpowers/`
+- Project-local generated specs and plans under `{DOCS_ROOT}/superduperpowers/`, local-only by default
 - Brainstorming, planning, TDD, debugging, verification, and branch-finishing skills
 - Grouped execution with flat, dependency-ordered task lists that stay readable in agent harnesses
 - Named reviewer agents: `spec-reviewer`, `code-reviewer`, `lite-spec-reviewer`, and `lite-code-reviewer`
 - Local-first finishing flow that prepares PR commands without pushing unless explicitly requested
-- Included OpenCode plugin entrypoint through `.opencode/plugins/superpowers.js`
+- Included OpenCode plugin entrypoint through `.opencode/plugins/superduperpowers.js`
 - Calendar release versioning in the form `YYYY.M.D`, with `YYYY.M.D-N` for additional same-day releases
 
 ---
@@ -66,24 +69,24 @@ See [OpenCode Install](.opencode/INSTALL.md) for the included setup and verifica
 | [OpenCode Install](.opencode/INSTALL.md) | Included OpenCode plugin setup and routing verification prompts |
 | [Testing](docs/testing.md) | Included OpenCode config tests and integration checks |
 | [Publishing](docs/publishing.md) | Manual npm Trusted Publishing release flow |
-| [Changelog](CHANGELOG.md) | Active release history |
+| [GitHub Releases](https://github.com/notchrisbutler/superduperpowers/releases) | Release notes and active release history |
 | [Acknowledgements](ACKNOWLEDGEMENTS.md) | Baseline platform attribution |
 
 ---
 
 ## Core Workflow
 
-Superpowers is opt-in by default for normal coding turns.
+SuperDuperPowers is opt-in by default for normal coding turns.
 
-- Explicit requests such as `using superpowers brainstorming`, `/brainstorm`, or `use superpowers executing-plans` load the requested workflow.
-- Clearly deep and ambiguous, investigation-heavy, high-risk, or plan-heavy requests may still trigger Superpowers implicitly.
+- Explicit requests such as `using superduperpowers brainstorming`, `using superpowers brainstorming`, `/brainstorm`, `/superduperpowers`, or `use superpowers executing-plans` load the requested workflow.
+- Clearly deep and ambiguous, investigation-heavy, high-risk, or plan-heavy requests may still trigger SuperDuperPowers implicitly.
 - Small reviews, quick code changes, wording edits, and config tweaks can use quick flow: check enough context, make the smallest correct change, run targeted validation when practical, and report what changed.
-- Trivial requests or requests to avoid Superpowers use normal agent behavior unless Superpowers is invoked later.
-- If intent is unclear, the agent should ask whether to use full flow, quick flow, or no Superpowers for the session.
+- Trivial requests or requests to avoid SuperDuperPowers use normal agent behavior unless SuperDuperPowers is invoked later.
+- If intent is unclear, the agent should ask whether to use full flow, quick flow, or no SuperDuperPowers for the session.
 
 Available full-flow workflows include brainstorming, planning, execution, TDD, debugging, verification, spec review, code review, and development-branch completion.
 
-When a user opts into the full Superpowers spec -> plan -> execution workflow, local commits are part of the checkpoint cadence: approved spec, approved plan, verified task scopes, and final verified changes. Pushes and PR creation still require explicit user instruction.
+Generated SuperDuperPowers specs and plans are local-only by default. Implementation workflows can still use local commits for verified implementation task scopes and final verified implementation changes. Pushes and PR creation require explicit user instruction.
 
 `skills/using-superpowers/SKILL.md` is the source of truth for routing details.
 

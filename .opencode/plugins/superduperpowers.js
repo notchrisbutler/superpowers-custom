@@ -1,14 +1,15 @@
 /**
- * Superpowers plugin for OpenCode.ai
+ * SuperDuperPowers plugin for OpenCode.ai
  *
- * Injects superpowers bootstrap context via system prompt transform.
- * Auto-registers skills directory via config hook (no symlinks needed).
+ * Injects SuperDuperPowers bootstrap context via user-message transform.
+ * Auto-registers skills and reviewer agents, and exposes workflow tools.
  */
 
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import { createSdpTools, getRuntimePaths, profileSummaryText } from './superduperpowers/sdp-tools.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -115,11 +116,15 @@ When skills reference tools you don't have, substitute OpenCode equivalents:
 - \`Task\` tool with subagents → Use OpenCode's \`task\` tool with the named \`subagent_type\` when available; use @mentions for manual user-invoked subagents
 - \`Skill\` tool → OpenCode's native \`skill\` tool
 - \`Read\`, \`Write\`, \`Edit\`, \`Bash\` → Your native tools
+- SuperDuperPowers workflow profile/state → Use \`sdp_profile\` when available; otherwise carry decisions explicitly in prompts and generated docs
+- SuperDuperPowers generated-doc hygiene → Use \`sdp_setup_hygiene\` when available before writing project-local generated specs/plans
+- SuperDuperPowers branch preflight → Use \`sdp_branch_context\` when available before execution starts
+- Invocation aliases include \`superpowers\`, \`superduperpowers\`, \`/superpowers\`, \`/superduperpowers\`, and \`/brainstorm\`
 
 Use OpenCode's native \`skill\` tool to list and load skills.`;
 
     return `<EXTREMELY_IMPORTANT>
-You have superpowers.
+You have SuperDuperPowers.
 
 **IMPORTANT: The using-superpowers skill content is included below. It is ALREADY LOADED - you are currently following it. Do NOT use the skill tool to load "using-superpowers" again - that would be redundant.**
 
@@ -130,6 +135,8 @@ ${toolMapping}
   };
 
   return {
+    tool: createSdpTools({ configDir }),
+
     // Inject skills path into live config so OpenCode discovers superpowers skills
     // without requiring manual symlinks or config file edits.
     // This works because Config.get() returns a cached singleton — modifications
@@ -163,6 +170,25 @@ ${toolMapping}
       if (firstUser.parts.some(p => p.type === 'text' && p.text.includes('EXTREMELY_IMPORTANT'))) return;
       const ref = firstUser.parts[0];
       firstUser.parts.unshift({ ...ref, type: 'text', text: bootstrap });
+    },
+
+    'experimental.session.compacting': async (input, output) => {
+      const sessionID = input?.sessionID || input?.session?.id || output?.sessionID || output?.session?.id;
+      if (!sessionID) return output;
+      const activeDirectory = input?.directory || input?.worktree || directory || process.cwd();
+      const paths = getRuntimePaths(configDir, sessionID, activeDirectory);
+      const profilePath = path.join(paths.stateDir, 'profile.json');
+      if (!fs.existsSync(profilePath)) return output;
+
+      const profile = JSON.parse(fs.readFileSync(profilePath, 'utf8'));
+      const summary = profileSummaryText(profile);
+      if (output && typeof output === 'object') {
+        output.superduperpowersProfileSummary = summary;
+        if (Array.isArray(output.messages)) {
+          output.messages.unshift({ role: 'system', content: summary });
+        }
+      }
+      return output;
     }
   };
 };

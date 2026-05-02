@@ -1,8 +1,8 @@
 {
   "name": "@notchrisbutler/superduperpowers",
-  "version": "2026.5.1",
+  "version": "2026.5.1-1",
   "type": "module",
-  "main": ".opencode/plugins/superpowers.js",
+  "main": ".opencode/plugins/superduperpowers.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/notchrisbutler/superduperpowers"
@@ -12,6 +12,9 @@
     "version:check": "scripts/bump-version.sh --check",
     "version:audit": "scripts/bump-version.sh --audit"
   },
+  "dependencies": {
+    "@opencode-ai/plugin": "1.14.30"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -19,14 +22,14 @@
     "agents/",
     "skills/",
     "assets/",
-    ".opencode/plugins/superpowers.js",
+    ".opencode/plugins/superduperpowers.js",
+    ".opencode/plugins/superduperpowers/",
     ".opencode/INSTALL.md",
     "AGENTS.md",
     "ACKNOWLEDGEMENTS.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
     "README.md",
-    "CHANGELOG.md",
     "LICENSE"
   ]
 }

@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when the user asks for TDD, when a Superpowers full workflow calls for TDD, or when a high-risk behavior change needs tests-first implementation.
+description: Use when the user asks for TDD, when a SuperDuperPowers full workflow calls for TDD, or when a high-risk behavior change needs tests-first implementation.
 ---
 
 # Test-Driven Development (TDD)
@@ -18,13 +18,23 @@ Write the test first. Watch it fail. Write minimal code to pass.
 Use this skill when:
 
 - The user asks for TDD or tests-first work.
-- A Superpowers full workflow calls for TDD.
+- A SuperDuperPowers full workflow calls for TDD.
 - A behavior change is high-risk enough that tests-first work is the safest path.
 - You are implementing a regression fix where a failing test is needed to prove the bug.
 
-Do not auto-trigger this skill for every quick flow, small feature, refactor, or config change. If the user asked for quick flow or no Superpowers, keep the work lightweight unless the task escalates.
+Do not auto-trigger this skill for every quick flow, small feature, refactor, or config change. If the user asked for quick flow or no SuperDuperPowers, keep the work lightweight unless the task escalates.
 
 If the change looks risky but the user asked for speed, ask whether to switch to TDD rather than silently invoking this skill.
+
+## Testing Intensity
+
+Read testing intensity from the workflow profile when available:
+
+- `full-regression`: write or update tests for every important behavior and regression surface.
+- `major-behavior`: write or update tests for major behavior and integration points; avoid exhaustive or obvious tests.
+- `existing-tests-only`: do not add new tests by default; update existing tests only when the change breaks them and rely on targeted validation or manual checks when appropriate.
+
+TDD remains strict when selected: write the test first, watch it fail, then implement. Testing intensity changes how much coverage is expected, not the red-green-refactor order.
 
 ## The Iron Law
 
@@ -349,7 +359,7 @@ Extract validation for multiple fields if needed.
 
 Before marking work complete:
 
-- [ ] Every new function/method has a test
+- [ ] New tests match the profile's testing intensity.
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test

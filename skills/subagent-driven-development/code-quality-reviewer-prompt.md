@@ -24,6 +24,9 @@ Generic worker or inline fallback prompt:
     BASE_SHA: [commit before task/group]
     HEAD_SHA: [current commit]
 
+    ## Workflow Profile Summary
+    [PROFILE_SUMMARY: generated-doc policy, path policy, branch policy, execution strategy, and testing intensity when relevant]
+
     Check:
     - Established patterns, naming, organization, and maintainability
     - Error handling, type safety, defensive programming, security, and performance risks
@@ -32,6 +35,9 @@ Generic worker or inline fallback prompt:
     - Whether units are decomposed so they can be understood and tested independently
     - Whether the implementation follows the file structure from the plan
     - Whether new or modified files became too large because of this change
+    - User-facing product naming: prefer `SuperDuperPowers`; allow `superpowers:*`, `using-superpowers`, and `.opencode/plugins/superduperpowers.js` only as compatibility identifiers
+    - Whether implementation honors testing intensity and avoids obvious tests that only assert imported constants or implementation details
+    - Whether branch/worktree code avoids hidden branch changes, pushes, merges, resets, or destructive cleanup
 
     Always acknowledge what was done well before highlighting issues.
 

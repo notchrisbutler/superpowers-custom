@@ -16,6 +16,12 @@ Generic worker or implementation subagent:
 
     [Scene-setting: where this fits, dependencies, architectural context]
 
+    ## Workflow Profile Summary
+
+    [Paste compact SuperDuperPowers profile summary here: route, generated-doc policy, execution method, execution strategy, branch policy, testing intensity, docs path, runtime/worktree path when relevant]
+
+    Honor `testingIntensity`. For `major-behavior`, test important behavior and integration points without creating exhaustive or obvious tests. Do not ask preference questions during execution unless missing profile data blocks safe work.
+
     ## Before You Begin
 
     If you have questions about:
@@ -93,7 +99,7 @@ Generic worker or implementation subagent:
     **Testing:**
     - Do tests actually verify behavior (not just mock behavior)?
     - Did I follow TDD if required?
-    - Are tests comprehensive?
+    - Do tests match the requested testing intensity and verify real behavior?
 
     If you find issues during self-review, fix them now before reporting.
 

@@ -15,6 +15,8 @@ Add the plugin to your OpenCode config, typically `opencode.json`:
 
 Start a fresh OpenCode session after changing plugin config so the package is resolved and loaded.
 
+If you previously tested a local shim named `superpowers.js` in your user OpenCode plugins directory, remove that stale shim before verifying this package. The included entrypoint is now `superduperpowers.js`; keeping both shims can make OpenCode load duplicate plugin copies.
+
 ## GitHub Backup Install
 
 If npm resolution is unavailable, use the GitHub repository directly:
@@ -41,11 +43,13 @@ Use an absolute path to the repository checkout. Restart OpenCode after changing
 
 ## What The Plugin Registers
 
-The OpenCode plugin entrypoint is `.opencode/plugins/superpowers.js`.
+The OpenCode plugin entrypoint is `.opencode/plugins/superduperpowers.js`.
 
 - It adds the packaged `skills/` directory to OpenCode skill discovery.
 - It registers reviewer subagents from `agents/` as named OpenCode subagents: `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec-reviewer`.
 - It injects the `using-superpowers` bootstrap into the first user message once per session so routing guidance is available without duplicating it on later turns.
+- Custom tools: `sdp_profile`, `sdp_setup_hygiene`, and `sdp_branch_context`.
+- User-level runtime state and default worktrees under `{OPENCODE_CONFIG_DIR}/superduperpowers/`.
 
 Bundled agents do not need to be copied into a project. The plugin registers the packaged agent definitions directly when it loads.
 
@@ -57,6 +61,9 @@ Skill discovery and bootstrap prompt:
 
 ```text
 Use the superpowers brainstorming skill.
+Use SuperDuperPowers brainstorming for this feature.
+Use superduperpowers quick flow for a small typo fix.
+Execute this approved plan with subagents using user-level worktrees.
 ```
 
 Expected: the `skill` tool can load skills from this package, the `using-superpowers` bootstrap is present once, and the agent follows the requested brainstorming workflow.
@@ -72,15 +79,15 @@ Expected: `code-reviewer`, `spec-reviewer`, `lite-code-reviewer`, and `lite-spec
 Quick-flow prompt:
 
 ```text
-Using Superpowers quick flow, make a small README wording improvement.
+Using SuperDuperPowers quick flow, make a small README wording improvement.
 ```
 
 Expected: the agent gathers lightweight context, makes the bounded change, runs targeted validation when practical, and avoids full brainstorming, TDD, and planning unless the task escalates.
 
-No-Superpowers prompt:
+No-SuperDuperPowers prompt:
 
 ```text
-Fix a typo in README without using Superpowers.
+Fix a typo in README without using SuperDuperPowers.
 ```
 
-Expected: the agent does not load brainstorming, TDD, planning, or other Superpowers workflow skills for the no-Superpowers prompt.
+Expected: the agent does not load brainstorming, TDD, planning, or other SuperDuperPowers workflow skills for the no-SuperDuperPowers prompt.
