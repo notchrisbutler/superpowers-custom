@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish, without leading v, for example YYYY.M.D"
+        description: "Raw version to publish, matching npm and GitHub Releases, for example YYYY.M.D or YYYY.M.D-N"
         required: true
         type: string
       dist_tag:
@@ -71,8 +71,10 @@ jobs:
             throw new Error(`Unsupported mode: ${mode}`);
           }
 
-          fs.appendFileSync(env.GITHUB_ENV, `VERSION=${version}\nDIST_TAG=${distTag}\nMODE=${mode}\n`);
+          fs.appendFileSync(env.GITHUB_ENV, `VERSION=${version}\nDIST_TAG=${distTag}\nMODE=${mode}\nRELEASE_TAG=${version}\nRELEASE_TITLE=${version}\n`);
           console.log(`version=${version}`);
+          console.log(`release_tag=${version}`);
+          console.log(`release_title=${version}`);
           console.log(`dist_tag=${distTag}`);
           console.log(`mode=${mode}`);
           NODE
@@ -104,7 +106,8 @@ jobs:
       - name: Stop after dry run
         if: ${{ inputs.mode == 'dry-run' }}
         run: |
-          echo "npm publish dry run passed for v${VERSION} with npm dist-tag ${DIST_TAG}."
+          echo "npm publish dry run passed for ${VERSION} with npm dist-tag ${DIST_TAG}."
+          echo "Use GitHub Release tag ${RELEASE_TAG} and title ${RELEASE_TITLE}."
 
       - name: Publish to npm
         if: ${{ inputs.mode == 'publish' }}

@@ -34,7 +34,8 @@ scripts/bump-version.sh --next
 scripts/bump-version.sh --check
 scripts/bump-version.sh --audit
 git add package.json README.md
-git commit -m "Release v$(node -p "require('./package.json').version")"
+VERSION=$(node -p "require('./package.json').version")
+git commit -m "Release ${VERSION}"
 git push origin main
 ```
 
@@ -55,7 +56,7 @@ Run the `Publish package` workflow manually with:
 
 ```text
 mode: dry-run
-version: YYYY.M.D
+version: YYYY.M.D or YYYY.M.D-N
 dist_tag: latest
 ```
 
@@ -66,8 +67,8 @@ Dry-run mode validates package metadata and runs `npm publish --dry-run` with th
 Create the GitHub Release separately if you want one:
 
 ```text
-Tag: vYYYY.M.D
-Release title: vYYYY.M.D
+Tag: YYYY.M.D or YYYY.M.D-N
+Release title: YYYY.M.D or YYYY.M.D-N
 Target: main
 ```
 
@@ -75,7 +76,7 @@ Then run the `Publish package` workflow manually. Choose npm dist-tag `prereleas
 
 ```text
 mode: publish
-version: YYYY.M.D
+version: YYYY.M.D or YYYY.M.D-N
 dist_tag: prerelease
 ```
 
