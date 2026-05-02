@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { expectedCommandNames } from './sdp-registration.js';
 
 const SDP_SCHEMA_VERSION = 1;
 const SDP_RUNTIME_DIR = 'superduperpowers';
@@ -92,6 +93,44 @@ const stringProfileInputKeys = new Set([
 
 const toPosixPath = (value) => value.split(path.sep).join('/');
 const nowIso = () => new Date().toISOString();
+
+const doctorCheck = (checks, id, status, message, details = {}) => {
+  checks.push({ id, status, message, details });
+};
+
+const fileExists = (filePath) => {
+  try {
+    return fs.existsSync(filePath);
+  } catch {
+    return false;
+  }
+};
+
+const dirExists = (dirPath) => {
+  try {
+    return fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory();
+  } catch {
+    return false;
+  }
+};
+
+const readTextSafe = (filePath) => {
+  try {
+    return fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return '';
+  }
+};
+
+const summarizeDoctor = (checks) => ({
+  ok: checks.every((check) => check.status !== 'error'),
+  errors: checks.filter((check) => check.status === 'error').length,
+  warnings: checks.filter((check) => check.status === 'warning').length,
+  recommendations: checks
+    .filter((check) => check.status !== 'ok')
+    .map((check) => ({ id: check.id, recommendation: check.recommendation || check.message })),
+  checks
+});
 
 const projectKeyFor = (directory) => {
   const normalized = path.resolve(directory || process.cwd());
@@ -262,15 +301,19 @@ const validateRelatedStateFiles = (stateDir) => {
   if (!fs.existsSync(eventsPath)) {
     errors.push('missing events.jsonl');
   } else {
-    const lines = fs.readFileSync(eventsPath, 'utf8').split(/\r?\n/).filter(Boolean);
-    lines.forEach((line, index) => {
-      try {
-        const event = JSON.parse(line);
-        if (!event || typeof event !== 'object' || Array.isArray(event)) errors.push(`events.jsonl line ${index + 1} must be an object`);
-      } catch (error) {
-        errors.push(`invalid JSON in events.jsonl line ${index + 1}: ${error.message}`);
-      }
-    });
+    try {
+      const lines = fs.readFileSync(eventsPath, 'utf8').split(/\r?\n/).filter(Boolean);
+      lines.forEach((line, index) => {
+        try {
+          const event = JSON.parse(line);
+          if (!event || typeof event !== 'object' || Array.isArray(event)) errors.push(`events.jsonl line ${index + 1} must be an object`);
+        } catch (error) {
+          errors.push(`invalid JSON in events.jsonl line ${index + 1}: ${error.message}`);
+        }
+      });
+    } catch (error) {
+      errors.push(`invalid events.jsonl: ${error.message}`);
+    }
   }
 
   return errors;
@@ -547,8 +590,105 @@ const createBranchContextTool = () => tool({
   }
 });
 
-export const createSdpTools = ({ configDir }) => ({
+const createDoctorTool = (configDir, packageInfo, getRegistrationReport) => tool({
+  description: 'Diagnose SuperDuperPowers OpenCode plugin installation and runtime state without modifying files.',
+  args: {
+    operation: tool.schema.enum(['check'])
+  },
+  async execute(args, context) {
+    const checks = [];
+    const directory = context.directory || context.worktree || process.cwd();
+    const paths = getRuntimePaths(configDir, context.sessionID, directory);
+    const registration = getRegistrationReport() || null;
+    const packageRoot = packageInfo.packageRoot || null;
+    const skillsDir = packageInfo.skillsDir || null;
+    const agentsDir = packageInfo.agentsDir || null;
+
+    doctorCheck(checks, 'operation', args.operation === 'check' ? 'ok' : 'error', `operation=${args.operation}`);
+    doctorCheck(checks, 'package-root', packageRoot && dirExists(packageRoot) ? 'ok' : 'error', packageRoot ? `package root ${packageRoot}` : 'package root unavailable', { packageRoot });
+    doctorCheck(checks, 'skills-dir', skillsDir && dirExists(skillsDir) ? 'ok' : 'error', skillsDir ? `skills dir ${skillsDir}` : 'skills dir unavailable', { skillsDir });
+
+    const skillsPathStatus = registration?.skillsPath?.status || null;
+    doctorCheck(
+      checks,
+      'skills-registration',
+      !registration ? 'warning' : (skillsPathStatus ? 'ok' : 'error'),
+      !registration ? 'registration report unavailable until config hook runs' : (skillsPathStatus ? `skills path ${skillsPathStatus}` : 'skills path registration missing'),
+      { skillsPath: registration?.skillsPath || null }
+    );
+
+    const requiredSkills = ['using-superpowers', 'brainstorming', 'writing-plans', 'executing-plans', 'subagent-driven-development', 'requesting-spec-review', 'requesting-code-review', 'verification-before-completion'];
+    const missingSkills = requiredSkills.filter((name) => !skillsDir || !fileExists(path.join(skillsDir, name, 'SKILL.md')));
+    doctorCheck(checks, 'required-skills', missingSkills.length === 0 ? 'ok' : 'error', missingSkills.length === 0 ? 'required skills exist' : `missing skills: ${missingSkills.join(', ')}`, { requiredSkills, missingSkills });
+
+    const requiredAgents = ['code-reviewer', 'spec-reviewer', 'lite-code-reviewer', 'lite-spec-reviewer'];
+    const missingAgents = requiredAgents.filter((name) => !agentsDir || !fileExists(path.join(agentsDir, `${name}.md`)));
+    doctorCheck(checks, 'reviewer-agents', missingAgents.length === 0 ? 'ok' : 'error', missingAgents.length === 0 ? 'reviewer agents exist' : `missing agents: ${missingAgents.join(', ')}`, { requiredAgents, missingAgents });
+
+    const registeredAgents = registration?.agents || {};
+    const missingAgentRegistrations = registration ? requiredAgents.filter((name) => !registeredAgents[name]) : [];
+    doctorCheck(
+      checks,
+      'agent-registration',
+      !registration ? 'warning' : (missingAgentRegistrations.length === 0 ? 'ok' : 'error'),
+      !registration ? 'registration report unavailable until config hook runs' : (missingAgentRegistrations.length === 0 ? 'reviewer agents registered or preserved' : `missing reviewer agent registrations: ${missingAgentRegistrations.join(', ')}`),
+      { agents: registeredAgents, missingAgentRegistrations }
+    );
+
+    const expectedCommands = expectedCommandNames();
+    const registeredCommands = registration?.commands || {};
+    const missingCommands = registration ? expectedCommands.filter((name) => !registeredCommands[name]) : [];
+    doctorCheck(checks, 'commands', !registration ? 'warning' : (missingCommands.length === 0 ? 'ok' : 'error'), !registration ? 'registration report unavailable until config hook runs' : (missingCommands.length === 0 ? 'expected commands registered or preserved' : `missing command registrations: ${missingCommands.join(', ')}`), { commands: registeredCommands, missingCommands });
+
+    const preservedCommands = Object.entries(registeredCommands).filter(([, status]) => status === 'preserved').map(([name]) => name);
+    if (preservedCommands.length > 0) {
+      doctorCheck(checks, 'command-overrides', 'warning', `user-defined commands preserved: ${preservedCommands.join(', ')}`, { preservedCommands });
+    }
+
+    const tools = ['sdp_profile', 'sdp_setup_hygiene', 'sdp_branch_context', 'sdp_doctor'];
+    doctorCheck(checks, 'tools', 'ok', `expected tools exposed: ${tools.join(', ')}`, { tools });
+
+    const profilePath = paths.stateDir ? path.join(paths.stateDir, 'profile.json') : null;
+    if (profilePath && fileExists(profilePath)) {
+      const parsed = readJsonFile(profilePath);
+      if (parsed.errors.length > 0) {
+        doctorCheck(checks, 'profile', 'error', parsed.errors.join('; '), { profilePath });
+      } else {
+        const errors = [...validateProfile(parsed.value, { allowIncomplete: parsed.value?.route === null }).errors, ...validateRelatedStateFiles(paths.stateDir)];
+        doctorCheck(checks, 'profile', errors.length === 0 ? 'ok' : 'error', errors.length === 0 ? 'active profile validates' : errors.join('; '), { profilePath, errors });
+      }
+    } else {
+      doctorCheck(checks, 'profile', 'warning', 'active profile has not been initialized', { profilePath });
+    }
+
+    doctorCheck(checks, 'runtime-root', dirExists(paths.runtimeRoot) ? 'ok' : 'warning', dirExists(paths.runtimeRoot) ? `runtime root exists: ${paths.runtimeRoot}` : `runtime root not created yet: ${paths.runtimeRoot}`, { runtimeRoot: paths.runtimeRoot });
+
+    const legacyShim = path.join(configDir, 'plugins', 'superpowers.js');
+    doctorCheck(checks, 'legacy-shim', fileExists(legacyShim) ? 'warning' : 'ok', fileExists(legacyShim) ? `legacy shim exists: ${legacyShim}` : 'legacy superpowers.js shim not found', { legacyShim });
+
+    const configText = `${readTextSafe(path.join(configDir, 'opencode.json'))}\n${readTextSafe(path.join(configDir, 'opencode.jsonc'))}`;
+    const duplicateRisk = /superpowers\.js/.test(configText) || (/superduperpowers/.test(configText) && fileExists(legacyShim));
+    doctorCheck(checks, 'duplicate-plugin-risk', duplicateRisk ? 'warning' : 'ok', duplicateRisk ? 'possible mixed legacy/package plugin load detected' : 'no mixed legacy/package plugin risk detected from known files', { checkedConfigDir: configDir });
+
+    const hygiene = docsEntriesFor(directory, null);
+    const gitignore = readTextSafe(path.join(directory, '.gitignore')).split(/\r?\n/);
+    const ignore = readTextSafe(path.join(directory, '.ignore')).split(/\r?\n/);
+    const missingHygiene = {
+      gitignore: hygiene.entries.gitignore.filter((entry) => !gitignore.includes(entry)),
+      ignore: hygiene.entries.ignore.filter((entry) => !ignore.includes(entry))
+    };
+    doctorCheck(checks, 'generated-doc-hygiene', missingHygiene.gitignore.length === 0 && missingHygiene.ignore.length === 0 ? 'ok' : 'warning', missingHygiene.gitignore.length === 0 && missingHygiene.ignore.length === 0 ? 'generated-doc hygiene entries are present' : 'generated-doc hygiene entries are missing', { docsRoot: hygiene.docsRoot, missing: missingHygiene });
+
+    const quarantines = dirExists(paths.quarantineRoot) ? fs.readdirSync(paths.quarantineRoot).filter(Boolean) : [];
+    doctorCheck(checks, 'repair-history', quarantines.length === 0 ? 'ok' : 'warning', quarantines.length === 0 ? 'no quarantined runtime state found' : `quarantined runtime state entries: ${quarantines.length}`, { quarantineRoot: paths.quarantineRoot, quarantines });
+
+    return JSON.stringify(summarizeDoctor(checks), null, 2);
+  }
+});
+
+export const createSdpTools = ({ configDir, packageInfo = {}, getRegistrationReport = () => null }) => ({
   sdp_profile: createProfileTool(configDir),
   sdp_setup_hygiene: createSetupHygieneTool(),
-  sdp_branch_context: createBranchContextTool()
+  sdp_branch_context: createBranchContextTool(),
+  sdp_doctor: createDoctorTool(configDir, packageInfo, getRegistrationReport)
 });

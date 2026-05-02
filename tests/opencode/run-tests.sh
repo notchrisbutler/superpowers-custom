@@ -60,6 +60,7 @@ done
 tests=(
     "test-plugin-loading.sh"
     "test-profile-tool.sh"
+    "test-doctor-tool.sh"
     "test-setup-hygiene.sh"
     "test-branch-context.sh"
     "test-workflow-policy.sh"
