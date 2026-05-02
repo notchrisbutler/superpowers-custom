@@ -217,6 +217,7 @@ echo "  [PASS] Bootstrap transform injects once"
 # Test 11: Verify compaction hook appends context
 echo "Test 11: Checking compaction profile context injection..."
 node --input-type=module <<'NODE'
+import fs from 'fs';
 import path from 'path';
 
 const { SuperpowersPlugin } = await import(process.env.SUPERPOWERS_PLUGIN_FILE);
@@ -232,6 +233,32 @@ await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, 
 if (output.context.length !== 1) throw new Error(`expected one compaction context entry, got ${output.context.length}`);
 if (!output.context[0].includes('SuperDuperPowers profile: route=full-brainstorming')) throw new Error('profile summary missing from compaction context');
 if ('messages' in output) throw new Error('compaction hook wrote output.messages');
+fs.writeFileSync(path.join(setResult.profile.stateDir, 'profile.json'), 'null\n');
+const nullOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, nullOutput);
+if (nullOutput.context.length !== 0) throw new Error('compaction should skip non-object profiles');
+fs.writeFileSync(path.join(setResult.profile.stateDir, 'profile.json'), '{not json\n');
+const corruptOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, corruptOutput);
+if (corruptOutput.context.length !== 0) throw new Error('compaction should skip corrupt profiles');
+const externalProfile = path.join(project, 'external-profile.json');
+fs.writeFileSync(externalProfile, JSON.stringify(setResult.profile, null, 2));
+fs.rmSync(path.join(setResult.profile.stateDir, 'profile.json'));
+fs.symlinkSync(externalProfile, path.join(setResult.profile.stateDir, 'profile.json'));
+const symlinkOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, symlinkOutput);
+if (symlinkOutput.context.length !== 0) throw new Error('compaction should skip symlink profiles');
+const externalStateDir = path.join(project, 'external-state-dir');
+fs.mkdirSync(externalStateDir, { recursive: true });
+fs.writeFileSync(path.join(externalStateDir, 'profile.json'), JSON.stringify(setResult.profile, null, 2));
+fs.rmSync(setResult.profile.stateDir, { recursive: true, force: true });
+fs.symlinkSync(externalStateDir, setResult.profile.stateDir, 'dir');
+const stateDirSymlinkOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: 'ses_compaction' }, stateDirSymlinkOutput);
+if (stateDirSymlinkOutput.context.length !== 0) throw new Error('compaction should skip symlink stateDir');
+const traversalOutput = { context: [] };
+await hooks['experimental.session.compacting']({ sessionID: '../escape' }, traversalOutput);
+if (traversalOutput.context.length !== 0) throw new Error('compaction should skip traversal session ids');
 console.log('compaction context injected');
 NODE
 echo "  [PASS] Compaction hook appends output.context"

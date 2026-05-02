@@ -9,7 +9,7 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { fileURLToPath } from 'url';
-import { createSdpTools, getRuntimePaths, profileSummaryText } from './superduperpowers/sdp-tools.js';
+import { autoRepairRuntimeState, createSdpTools, getRuntimePaths, profileSummaryText, readProfileJsonSafe, validateRuntimePathContainment } from './superduperpowers/sdp-tools.js';
 import { getBootstrapContent, registerBundledConfig } from './superduperpowers/sdp-registration.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -27,13 +27,14 @@ const normalizePath = (p, homeDir) => {
   return path.resolve(normalized);
 };
 
-export const SuperpowersPlugin = async ({ client, directory }) => {
+export const SuperpowersPlugin = async ({ client, directory, worktree } = {}) => {
   const homeDir = os.homedir();
   const superpowersAgentsDir = path.resolve(__dirname, '../../agents');
   const superpowersSkillsDir = path.resolve(__dirname, '../../skills');
   const envConfigDir = normalizePath(process.env.OPENCODE_CONFIG_DIR, homeDir);
   const configDir = envConfigDir || path.join(homeDir, '.config/opencode');
   let registrationReport = null;
+  const driftCheckedSessions = new Set();
 
   const packageInfo = {
     packageRoot: path.resolve(__dirname, '../..'),
@@ -75,16 +76,47 @@ export const SuperpowersPlugin = async ({ client, directory }) => {
       firstUser.parts.unshift({ ...ref, type: 'text', text: bootstrap });
     },
 
+    'chat.message': async (input) => {
+      if (!input?.sessionID || driftCheckedSessions.has(input.sessionID)) return;
+      driftCheckedSessions.add(input.sessionID);
+      const activeDirectory = directory || worktree || process.cwd();
+      const activeWorktree = worktree || directory || process.cwd();
+      autoRepairRuntimeState({
+        configDir,
+        context: {
+          sessionID: input.sessionID,
+          messageID: input.messageID || null,
+          directory: activeDirectory,
+          worktree: activeWorktree
+        }
+      });
+    },
+
     'experimental.session.compacting': async (input, output) => {
       const sessionID = input?.sessionID;
       if (!sessionID) return output;
-      const activeDirectory = directory || process.cwd();
+      const activeDirectory = directory || worktree || process.cwd();
       const paths = getRuntimePaths(configDir, sessionID, activeDirectory);
+      if (validateRuntimePathContainment(paths).length > 0) return output;
+      for (const dirPath of [paths.runtimeRoot, paths.stateRoot]) {
+        try {
+          const stat = fs.lstatSync(dirPath);
+          if (stat.isSymbolicLink() || !stat.isDirectory()) return output;
+        } catch {
+          return output;
+        }
+      }
+      try {
+        const stat = fs.lstatSync(paths.stateDir);
+        if (stat.isSymbolicLink() || !stat.isDirectory()) return output;
+      } catch {
+        return output;
+      }
       const profilePath = path.join(paths.stateDir, 'profile.json');
-      if (!fs.existsSync(profilePath)) return output;
 
-      const profile = JSON.parse(fs.readFileSync(profilePath, 'utf8'));
-      const summary = profileSummaryText(profile);
+      const profile = readProfileJsonSafe(profilePath);
+      if (!profile.value || profile.errors.length > 0) return output;
+      const summary = profileSummaryText(profile.value);
       if (output && Array.isArray(output.context)) {
         output.context.push(summary);
       }

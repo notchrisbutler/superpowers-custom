@@ -58,6 +58,16 @@ if (byId['legacy-shim'].status !== 'warning') throw new Error('legacy shim warni
 if (byId['duplicate-plugin-risk'].status !== 'warning') throw new Error('duplicate plugin warning missing');
 if (byId['command-overrides'].status !== 'warning') throw new Error('command override warning missing');
 if (byId.profile.status !== 'error') throw new Error('corrupt profile error missing');
+
+const quarantineRoot = path.join(process.env.OPENCODE_CONFIG_DIR, 'superduperpowers', 'quarantine');
+fs.mkdirSync(path.join(quarantineRoot, '123-ses_doctor_bad'), { recursive: true });
+const repairedDoctor = JSON.parse(await hooks.tool.sdp_doctor.execute({ operation: 'check' }, context));
+const repairHistory = repairedDoctor.checks.find((check) => check.id === 'repair-history');
+if (!repairHistory || repairHistory.status !== 'warning') throw new Error('repair history warning missing');
+fs.writeFileSync(path.join(quarantineRoot, 'repair-failure-123-ses_doctor_bad.json'), '{}\n');
+const failedRepairDoctor = JSON.parse(await hooks.tool.sdp_doctor.execute({ operation: 'check' }, context));
+const failedRepairHistory = failedRepairDoctor.checks.find((check) => check.id === 'repair-history');
+if (!failedRepairHistory || failedRepairHistory.status !== 'error') throw new Error('repair failure diagnostic missing');
 console.log('warning and error doctor behavior ok');
 NODE
 
