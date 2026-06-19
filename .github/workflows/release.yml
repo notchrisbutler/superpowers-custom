@@ -26,7 +26,7 @@ jobs:
       release_tag: ${{ steps.version.outputs.release_tag }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
@@ -129,7 +129,7 @@ jobs:
       release_commit: ${{ steps.commit.outputs.release_commit }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
@@ -198,7 +198,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: latest
           fetch-depth: 0
